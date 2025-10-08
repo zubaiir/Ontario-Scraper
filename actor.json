@@ -1,0 +1,32 @@
+{
+  "actorSpecification": 1,
+  "name": "ontario-tenders-scraper",
+  "title": "Ontario Tenders Scraper",
+  "description": "Scrapes opportunities from Ontario Tenders Portal",
+  "version": "1.2",
+  "input": "./input_schema.json",
+  "dockerfile": "./Dockerfile",
+  "storages": {
+    "dataset": {
+      "actorSpecification": 1,
+      "title": "Ontario Tenders Data",
+      "views": {
+        "overview": {
+          "title": "Overview",
+          "transformation": {
+            "fields": [
+              "title",
+              "buyer_organization",
+              "project_reference",
+              "publication_date",
+              "listing_expiry_date"
+            ]
+          },
+          "display": {
+            "component": "table"
+          }
+        }
+      }
+    }
+  }
+}

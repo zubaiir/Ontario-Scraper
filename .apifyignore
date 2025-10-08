@@ -1,0 +1,21 @@
+# Exclude local testing directory
+.actor
+apify_storage
+
+# Exclude git files
+.git
+.gitignore
+
+# Exclude IDE files
+.vscode
+.idea
+
+# Exclude build output (will be built in container)
+dist
+
+# Exclude node_modules (will be installed in container)
+node_modules
+
+# Other
+*.log
+.DS_Store

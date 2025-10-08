@@ -1,0 +1,34 @@
+{
+  "title": "Ontario Tenders Scraper Input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "webhookUrl": {
+      "title": "Webhook URL",
+      "type": "string",
+      "description": "Supabase webhook URL to send scraped data",
+      "editor": "textfield"
+    },
+    "webhookSecret": {
+      "title": "Webhook Secret",
+      "type": "string",
+      "description": "Secret key for webhook authentication",
+      "editor": "textfield",
+      "isSecret": true
+    },
+    "maxItems": {
+      "title": "Max Items",
+      "type": "integer",
+      "description": "Maximum number of items to scrape (0 for all)",
+      "default": 0,
+      "minimum": 0
+    },
+    "debug": {
+      "title": "Debug Mode",
+      "type": "boolean",
+      "description": "Run in debug mode with slower execution",
+      "default": false
+    }
+  },
+  "required": ["webhookUrl", "webhookSecret"]
+}

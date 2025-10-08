@@ -1,21 +1,26 @@
 {
-  "name": "bidalert",
+  "name": "ontario-tenders-scraper",
   "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "devDependencies": {
-    "@types/node": "^24.7.0",
-    "playwright": "^1.56.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+  "description": "Scrapes opportunities from Ontario Tenders Portal",
+  "engines": {
+    "node": ">=18.0.0"
   },
   "dependencies": {
-    "cheerio": "^1.1.0"
-  }
+    "apify": "^3.1.0",
+    "crawlee": "^3.5.0",
+    "playwright": "^1.40.0"
+  },
+  "devDependencies": {
+    "@apify/tsconfig": "^0.1.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  },
+  "scripts": {
+    "start": "node src/main.js",
+    "start:dev": "node src/main.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Your Name",
+  "license": "ISC"
 }
