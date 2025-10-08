@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"><html lang="en"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Ontario Tenders Portal - Login Page</title>
+<link href="default.css" rel="stylesheet" type="text/css">
+<style>
+a {
+    color: #0067b8 !important;
+    text-decoration: underline;
+    font-weight: normal;
+}
+.col-four li {
+    min-height: 30px !important;
+}
+</style>
+<script type="text/javascript">
+window.onload = function()
+{
+document.getElementById('username').focus()
+}
+</script> 
+<!--<script>
+    document.addEventListener("DOMContentLoaded", function(event) {
+        const script = document.createElement('script');
+        script.setAttribute('src', "https://solve-widget.forethought.ai/embed.js");
+        script.setAttribute('id', "forethought-widget-embed-script");
+        script.setAttribute('data-api-key', "7e860775-2e58-41bf-904f-e1c6459f9bcb");
+        script.setAttribute('data-ft-Embed-Script-Language', navigator.language);
+        script.setAttribute('data-ft-Password-Reset-Link', window.location.href.split('.com')[0] + '.com/esop/guest/go/public/lostPwd');
+        script.setAttribute('data-ft-Retrieve-Username-Link', window.location.href.split('.com')[0] + '.com/esop/guest/forgot/useralias/view.si');
+        document.head.appendChild(script);
+   });
+</script> -->
+</head>
+<body>
+<h1>Ontario Tenders Portal - Login Page</h1>
+<div id="wrapper">
+  <div id="header">
+    <ul id="menuTop">
+      <li><a href="login.html" title="ENGLISH">ENGLISH</a></li>
+      <li><a href="../web-fr/login.html" title="FRENCH">FRENCH</a></li>
+    </ul>
+    <div id="logo">
+      <div id="btn-prep" style="visibility:hidden;"></div>
+    </div>
+  </div>
+  <div id="banner"> <img src="../images/devine-top-en.jpg" alt="Ontario Tenders Portal - Jaggaer, Service Provider to Ontario"> </div>
+  <div id="main">
+    <div id="sidebar">
+      <div class="innerSidebar">
+        <h2 class="green">USER LOGIN</h2>
+        <br>
+        <form name="loginForm" method="post" action="/esop/guest/login.do">
+          <div>
+            <input name="loginNotOk" value="/esop/nac-host/public/web/error.html" type="hidden" style="">
+            <input name="customLoginPage" value="/esop/nac-host/public/web/login.html" type="hidden" style="">
+            <input name="customGuest" value="" type="hidden" style="">
+          </div>
+          <fieldset>
+            <legend class="hidden"></legend>
+            <label for="username">Username:</label>
+            <br>
+            <input name="login" id="username" type="text" maxlength="255" style="">
+            <label for="password">Password:</label>
+            <br>
+            <input name="password" id="password" type="password" maxlength="255" size="12" style="">
+            <input type="submit" value="Go" class="goButton" style="">
+          </fieldset>
+        </form>
+        <p class="arrow link-support"><a href="/esop/guest/go/public/lostPwd?locale=en_CA&amp;customLoginPage=/esop/nac-host/public/web/login.html&amp;customGuest=" title="Reset password and retrieve username">Forgot your password?</a></p>
+      </div>
+    </div>
+    <div id="content">
+      <div class="contentInnerLeft">
+        <h3 class="title">PUBLIC SECTOR OPPORTUNITIES</h3>
+        <div class="text">
+          <p></p>
+        </div>
+        <p class="arrow pl-60" id="link-current"> <a href="/esop/guest/go/public/opportunity/current?locale=en_CA&amp;customLoginPage=/esop/nac-host/public/web/login.html&amp;customGuest=" title="View and search current tender opportunities"> Current Opportunities</a></p>
+        <p class="arrow pl-60" id="link-past"> <a href="/esop/guest/go/public/opportunity/past?locale=en_CA&amp;customLoginPage=/esop/nac-host/public/web/login.html&amp;customGuest=" title="View and search past tender opportunities"> Past Opportunities</a></p>
+        <p class="arrow pl-60" id="link-global"> <a href="/esop/guest/go/public/opportunity/global?locale=en_CA&amp;customLoginPage=/esop/nac-host/public/web/login.html&amp;customGuest=" title="View and search global tender opportunities"> Global Opportunities</a></p>
+        <p class="link-support center text-center"><a href="https://jaggaer.my.site.com/customersupportrequest/s/" target="_blank" title="Request BUYER Support">Request BUYER Support</a></p>
+      </div>
+      <div class="contentInnerRight">
+        <h3 class="title">NEW SUPPLIER REGISTRATION</h3>
+        <div class="text">
+          <p>Looking for new business with Ontario Public Sector?</p>
+          <br>
+          <p>Register for <b>FREE</b> to receive email alerts and bid for opportunities tailored to your business.</p>
+        </div>
+        <p class="arrow" id="link-reg"><a title="Click for new supplier registration form" class="openNewPage openByJs" href="notice.jst?CONTROLS_ACCESSIBLE=true&amp;customGuest=" onclick="window.open(this.href);return false"> New Supplier? Register Now <img alt="Opens a new window" title="Opens a new window" src="/esop_custom/images/buttons/openNewWindow_button.png"></a></p>
+        <p class="link-support arrow"><a href="https://jaggaer.my.site.com/suppliersupportrequestaf/s/" target="_blank">
+			Supplier Support Request<img alt="Opens a new window." title="Opens a new window." src="/esop_custom/images/buttons/openNewWindow_button.png"></a></p>
+      </div>
+    </div>
+  </div>
+  <div id="bottom">
+    <ul id="bottomMenu" class="col-four">
+      <!-- li><a onclick="window.open(this.href);return false" title="Contract and Award Information" href="/esop/guest/go/public/opportunity/current?locale=en_CA&amp;customLoginPage=/esop/nac-host/public/web/login.html">Contract and Award Information</a></li-->
+      <li class="last"><a href="about.html" title="About Ontario Tenders Portal"> About Ontario Tenders Portal</a></li>
+      <li><a href="https://www.ontario.ca/page/doing-business-government-ontario" title="Doing Business with Ontario" onclick="window.open(this.href);return false"> Doing Business with Ontario <img alt="Opens a new window." title="Opens a new window." src="/esop_custom/images/buttons/openNewWindow_button.png"></a></li>
+      <li><a href="../attach/Supplier-Registration-Reference-Guide.pdf" title="Supplier Registration Instruction" onclick="window.open(this.href);return false"> Supplier Registration Instruction <img alt="Opens a new window." title="Opens a new window." src="/esop_custom/images/buttons/openNewWindow_button.png"></a></li>
+    </ul>
+    <p>Questions? Use the Support links above or call Toll Free 866-722-7390</p>
+  </div>
+</div>
+<script type="text/javascript">                
+if (window.location.href.indexOf('-prep.')!=-1) {
+document.getElementById('btn-prep').innerHTML='PREP';
+document.getElementById('link-current').innerHTML='Current Opportunities';
+document.getElementById('link-past').innerHTML='Past Opportunities';
+document.getElementById('link-global').innerHTML='<a href="/esop/nac-host/public/ontario/opportunities/global.jsp?locale=en_CA&customGuest=" title="View and search global tender opportunities" target="_blank">Global Opportunities <img src="/esop_custom/images/buttons/openNewWindow_button.png" alt="Opens a new window" title="Opens a new window"></a>';
+document.getElementById('link-reg').innerHTML='New Supplier? Register Now!';}
+	
+/* if (window.location.href.indexOf('-prep.')==-1) {
+document.getElementById('call').innerHTML='<a href="/esop/common-host/public/callMeBack/callMeBack.jsp?locale=en_CA&customGuest=">etenderhelp_ca@bravosolution.com</a>';} */
+</script>
+
+</body></html>
