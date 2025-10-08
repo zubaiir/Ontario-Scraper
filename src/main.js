@@ -63,6 +63,10 @@ Actor.main(async () => {
     // Step 4: Wait for table
     console.log('Waiting for table...');
     await page.waitForSelector('table tr', { timeout: 60000 });
+    
+    // Debug: Check what we found
+    const rowCount = await page.$$eval('table tr', rows => rows.length);
+    console.log(`Found ${rowCount} table rows (including header)`);
 
     // Step 5: Extract data
     const items = await page.$$eval('table tr', (rows) => {
@@ -128,7 +132,7 @@ Actor.main(async () => {
       results = results.slice(0, maxItems);
     }
 
-    console.log(`Scraped ${results.length} opportunities`);
+    console.log(`\nScraped ${results.length} opportunities`);
     
     // Log the first few results for debugging
     console.log('\n========== SCRAPED DATA PREVIEW ==========');
@@ -148,14 +152,18 @@ Actor.main(async () => {
 
     // Save to dataset for backup
     await Dataset.pushData(results);
+    console.log('Data saved to Apify dataset');
     
-    // Check if webhook is configured
+    // Webhook sending
+    let batchesSent = 0;
+    let totalBatches = 0;
+    let successfulBatches = 0;
+    let failedBatches = 0;
+    
     if (webhookUrl && webhookUrl.trim() !== '') {
-      console.log(`Webhook URL configured: ${webhookUrl}`);
-      console.log('SKIPPING webhook call for testing - data logged above');
+      console.log('\n========== WEBHOOK PROCESSING ==========');
+      console.log(`Webhook URL: ${webhookUrl}`);
       
-      // Uncomment below to enable webhook sending
-      /*
       // Send data to webhook in batches
       const BATCH_SIZE = 10;
       const batches = [];
@@ -163,26 +171,99 @@ Actor.main(async () => {
       for (let i = 0; i < results.length; i += BATCH_SIZE) {
         batches.push(results.slice(i, i + BATCH_SIZE));
       }
-
-      console.log(`Would send data in ${batches.length} batches of up to ${BATCH_SIZE} items each`);
       
-      // Actual webhook sending code here...
-      */
+      totalBatches = batches.length;
+      console.log(`Splitting data into ${totalBatches} batches of up to ${BATCH_SIZE} items each`);
+      
+      for (const [index, batch] of batches.entries()) {
+        console.log(`\nSending batch ${index + 1}/${totalBatches} (${batch.length} items)...`);
+        
+        try {
+          const payload = {
+            items: batch,
+            source: 'OTP/JAGGAER',
+            timestamp: new Date().toISOString(),
+            batchIndex: index,
+            totalBatches: totalBatches
+          };
+          
+          console.log(`Payload size: ${JSON.stringify(payload).length} bytes`);
+          
+          const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-apify-signature': webhookSecret,
+            },
+            body: JSON.stringify(payload),
+          });
+          
+          const responseText = await response.text();
+          console.log(`Response status: ${response.status}`);
+          
+          if (!response.ok) {
+            console.error(`❌ Webhook error for batch ${index + 1}: ${response.status}`);
+            console.error(`Response: ${responseText.substring(0, 500)}`);
+            failedBatches++;
+          } else {
+            console.log(`✅ Batch ${index + 1} sent successfully`);
+            if (responseText) {
+              try {
+                const responseJson = JSON.parse(responseText);
+                console.log(`Response: ${JSON.stringify(responseJson).substring(0, 200)}`);
+              } catch {
+                console.log(`Response (text): ${responseText.substring(0, 200)}`);
+              }
+            }
+            successfulBatches++;
+          }
+          
+          batchesSent++;
+          
+          // Small delay between batches to avoid overwhelming the webhook
+          if (index < batches.length - 1) {
+            console.log('Waiting 1 second before next batch...');
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        } catch (error) {
+          console.error(`❌ Error sending batch ${index + 1}:`, error.message);
+          failedBatches++;
+        }
+      }
+      
+      console.log('\n========== WEBHOOK SUMMARY ==========');
+      console.log(`Total batches: ${totalBatches}`);
+      console.log(`Successful: ${successfulBatches}`);
+      console.log(`Failed: ${failedBatches}`);
+      console.log('=====================================\n');
+      
     } else {
-      console.log('No webhook URL provided - data collection complete');
+      console.log('\n⚠️  No webhook URL provided - data collection complete');
+      console.log('Data is saved in the Apify dataset for retrieval\n');
     }
     
     // Store summary in key-value store
-    await Actor.setValue('OUTPUT', {
+    const summary = {
       scraped: results.length,
+      batchesSent: batchesSent,
+      totalBatches: totalBatches,
+      successfulBatches: successfulBatches,
+      failedBatches: failedBatches,
       timestamp: new Date().toISOString(),
-      webhookUrl,
-    });
+      webhookUrl: webhookUrl || 'Not configured'
+    };
+    
+    await Actor.setValue('OUTPUT', summary);
+    
+    console.log('\n========== RUN COMPLETE ==========');
+    console.log(JSON.stringify(summary, null, 2));
+    console.log('==================================\n');
 
     await browser.close();
     
   } catch (error) {
-    console.error('Scraper error:', error);
+    console.error('❌ Scraper error:', error);
+    console.error('Stack trace:', error.stack);
     throw error;
   }
 });

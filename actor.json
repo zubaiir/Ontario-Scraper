@@ -3,7 +3,7 @@
   "name": "ontario-tenders-scraper",
   "title": "Ontario Tenders Scraper",
   "description": "Scrapes opportunities from Ontario Tenders Portal",
-  "version": "1.2",
+  "version": "1.3",
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "storages": {
