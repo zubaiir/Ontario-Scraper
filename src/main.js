@@ -193,7 +193,7 @@ Actor.main(async () => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'x-apify-signature': webhookSecret,
+              'x-apify-signature': (webhookSecret || '').trim(),
             },
             body: JSON.stringify(payload),
           });
