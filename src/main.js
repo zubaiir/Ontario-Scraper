@@ -53,6 +53,7 @@ Actor.main(async () => {
 
     // Step 3: Switch to accessible mode if needed
     await page.waitForTimeout(4000);
+
     const accessibleLink = page.locator('a:has-text("Switch To Accessible Controls")');
     if (await accessibleLink.isVisible().catch(() => false)) {
       console.log('Switching to accessible view...');
@@ -91,19 +92,35 @@ Actor.main(async () => {
         const href = linkEl ? (linkEl.getAttribute('href') || '') : '';
         const title = linkEl ? (linkEl.textContent || '').trim() : projectTitle;
 
+        // data.push({
+        //   procurement_route: procurementRoute,
+        //   buyer_organization: buyerOrganization,
+        //   project_reference: projectReference,
+        //   title,
+        //   publication_date: publicationDate,
+        //   work_category: workCategory,
+        //   listing_expiry_date: expiryDate,
+        //   portal_url: href
+        //     ? href.startsWith('http')
+        //       ? href
+        //       : `https://ontariotenders.app.jaggaer.com${href}`
+        //     : 'https://ontariotenders.app.jaggaer.com/',
+        // });
+
         data.push({
-          procurement_route: procurementRoute,
-          buyer_organization: buyerOrganization,
-          project_reference: projectReference,
           title,
-          publication_date: publicationDate,
-          work_category: workCategory,
+          agency: buyerOrganization,
+          status: procurementRoute,
+          project_reference: projectReference,
+          created_at: publicationDate,
+          category: workCategory,
           listing_expiry_date: expiryDate,
-          portal_url: href
-            ? href.startsWith('http')
-              ? href
-              : `https://ontariotenders.app.jaggaer.com${href}`
-            : 'https://ontariotenders.app.jaggaer.com/',
+          portal_url: href && href !== '#fh'
+            ? (href.startsWith('http') ? href : `https://ontariotenders.app.jaggaer.com${href}`)
+            : 'https://ontariotenders.app.jaggaer.com/esop/toolkit/opportunity/current/list.si',
+          region: 'CA-ON',
+          city: 'Ontario',
+          portal_source: 'Ontario Tenders Portal',
         });
       }
       return data;
@@ -116,15 +133,17 @@ Actor.main(async () => {
         .update(`${r.title}${r.project_reference}${r.listing_expiry_date}`)
         .digest('hex')
         .slice(0, 40);
+
+      return { id: fingerprint, ...r, hash_fingerprint: fingerprint };
       
-      return {
-        id: fingerprint,
-        key: r.project_reference || fingerprint,
-        ...r,
-        region: 'CA-ON',
-        portal_source: 'OTP/JAGGAER',
-        hash_fingerprint: fingerprint,
-      };
+      // return {
+      //   id: fingerprint,
+      //   key: r.project_reference || fingerprint,
+      //   ...r,
+      //   region: 'CA-ON',
+      //   portal_source: 'OTP/JAGGAER',
+      //   hash_fingerprint: fingerprint,
+      // };
     });
 
     // Apply maxItems limit if specified
