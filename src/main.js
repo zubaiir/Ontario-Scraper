@@ -92,21 +92,6 @@ Actor.main(async () => {
         const href = linkEl ? (linkEl.getAttribute('href') || '') : '';
         const title = linkEl ? (linkEl.textContent || '').trim() : projectTitle;
 
-        // data.push({
-        //   procurement_route: procurementRoute,
-        //   buyer_organization: buyerOrganization,
-        //   project_reference: projectReference,
-        //   title,
-        //   publication_date: publicationDate,
-        //   work_category: workCategory,
-        //   listing_expiry_date: expiryDate,
-        //   portal_url: href
-        //     ? href.startsWith('http')
-        //       ? href
-        //       : `https://ontariotenders.app.jaggaer.com${href}`
-        //     : 'https://ontariotenders.app.jaggaer.com/',
-        // });
-
         data.push({
           title,
           agency: buyerOrganization,
@@ -135,15 +120,6 @@ Actor.main(async () => {
         .slice(0, 40);
 
       return { id: fingerprint, ...r, hash_fingerprint: fingerprint };
-      
-      // return {
-      //   id: fingerprint,
-      //   key: r.project_reference || fingerprint,
-      //   ...r,
-      //   region: 'CA-ON',
-      //   portal_source: 'OTP/JAGGAER',
-      //   hash_fingerprint: fingerprint,
-      // };
     });
 
     // Apply maxItems limit if specified
