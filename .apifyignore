@@ -15,6 +15,7 @@ dist
 
 # Exclude node_modules (will be installed in container)
 node_modules
+storage
 
 # Other
 *.log
