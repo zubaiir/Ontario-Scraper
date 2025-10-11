@@ -109,6 +109,7 @@ Actor.main(async () => {
     // Step 5b: Now get details for each opportunity
     const results = [];
     const itemsToProcess = maxItems > 0 ? items.slice(0, maxItems) : items;
+    // const itemsToProcess = items.slice(0, 5);
 
     for (let i = 0; i < itemsToProcess.length; i++) {
       const item = itemsToProcess[i];
