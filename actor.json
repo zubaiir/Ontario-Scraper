@@ -1,6 +1,6 @@
 {
   "actorSpecification": 1,
-  "name": "ontario-tenders-scraper",
+  "name": "bids-alert-scraper",
   "title": "Ontario Tenders Scraper",
   "description": "Scrapes opportunities from Ontario Tenders Portal",
   "version": "1.5",

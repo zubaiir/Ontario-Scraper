@@ -1,5 +1,5 @@
 {
-  "name": "ontario-tenders-scraper",
+  "name": "bids-alert-scraper",
   "version": "1.0.0",
   "description": "Scrapes opportunities from Ontario Tenders Portal",
   "engines": {

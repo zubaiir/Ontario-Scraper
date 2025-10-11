@@ -1,8 +1,17 @@
 {
-  "title": "Ontario Tenders Scraper Input",
+  "title": "Bid Alert Scraper Input",
   "type": "object",
   "schemaVersion": 1,
   "properties": {
+    "source": {
+      "title": "Source Portal",
+      "type": "string",
+      "description": "Select which portal to scrape",
+      "editor": "select",
+      "enum": ["ontario", "samgov"],
+      "enumTitles": ["Ontario Tenders Portal", "SAM.gov"],
+      "default": "ontario"
+    },
     "webhookUrl": {
       "title": "Webhook URL",
       "type": "string",
@@ -30,5 +39,5 @@
       "default": false
     }
   },
-  "required": ["webhookUrl", "webhookSecret"]
+  "required": ["source", "webhookUrl", "webhookSecret"]
 }
