@@ -1,4 +1,4 @@
-const { crypto } = require('../main');
+const { crypto, generateFingerprint } = require('../utils');
 
 /**
  * Ontario Tenders Portal Scraper

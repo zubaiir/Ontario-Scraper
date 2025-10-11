@@ -1,4 +1,4 @@
-const { formatDateForSupabase, crypto } = require('../main');
+const { crypto, generateFingerprint } = require('../utils');
 
 /**
  * SAM.gov Scraper

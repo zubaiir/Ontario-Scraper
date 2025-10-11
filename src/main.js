@@ -1,13 +1,9 @@
 const { Actor, Dataset } = require('apify');
 const { chromium } = require('playwright');
-const crypto = require('crypto');
 
 // Import individual scrapers
 const { scrapeOntario } = require('./scrapers/ontario');
 const { scrapeSamGov } = require('./scrapers/samgov');
-
-// Helper function to format dates for Supabase
-module.exports.crypto = crypto;
 
 // ==================== MAIN ACTOR ====================
 Actor.main(async () => {
