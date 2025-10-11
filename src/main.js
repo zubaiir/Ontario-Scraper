@@ -93,10 +93,10 @@ Actor.main(async () => {
           created_at: publicationDate,
           category: workCategory,
           listing_expiry_date: expiryDate,
-          portal_url: href && href !== '#fh'
-            ? (href.startsWith('http') ? href : `https://ontariotenders.app.jaggaer.com${href}`)
-            : 'https://ontariotenders.app.jaggaer.com/esop/toolkit/opportunity/current/list.si',
-          region: 'CA-ON',
+          // portal_url: href && href !== '#fh'
+          //   ? (href.startsWith('http') ? href : `https://ontariotenders.app.jaggaer.com${href}`)
+          //   : 'https://ontariotenders.app.jaggaer.com/esop/toolkit/opportunity/current/list.si',
+          portal_url: "https://ontariotenders.app.jaggaer.com/esop/nac-host/public/home.html",
           city: 'Ontario',
           portal_source: 'Ontario Tenders Portal',
         });
