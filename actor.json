@@ -1,15 +1,15 @@
 {
   "actorSpecification": 1,
   "name": "bids-alert-scraper",
-  "title": "Ontario Tenders Scraper",
-  "description": "Scrapes opportunities from Ontario Tenders Portal",
+  "title": "Bids ALert Scraper",
+  "description": "Scrapes opportunities for Bids Alert Dashboard",
   "version": "1.5",
   "input": "./input_schema.json",
   "dockerfile": "./Dockerfile",
   "storages": {
     "dataset": {
       "actorSpecification": 1,
-      "title": "Ontario Tenders Data",
+      "title": "Bids Alert Tenders Data",
       "views": {
         "overview": {
           "title": "Overview",
