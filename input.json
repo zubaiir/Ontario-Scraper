@@ -1,5 +1,5 @@
 {
-  "source": "samgov",
+  "source": "merx",
   "webhookUrl": "https://ezsoyvbanojrprtvgtly.supabase.co/functions/v1/webhooks-apify",
   "webhookSecret": "12345",
   "maxItems": 5,

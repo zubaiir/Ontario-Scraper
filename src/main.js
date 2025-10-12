@@ -4,6 +4,7 @@ const { chromium } = require('playwright');
 // Import individual scrapers
 const { scrapeOntario } = require('./scrapers/ontario');
 const { scrapeSamGov } = require('./scrapers/samgov');
+const { scrapeMerx } = require('./scrapers/merx');
 
 // ==================== MAIN ACTOR ====================
 Actor.main(async () => {
@@ -25,9 +26,16 @@ Actor.main(async () => {
   console.log('=====================================\n');
 
   try {
-    const browser = await chromium.launch({ 
-      headless: true
+    // const browser = await chromium.launch({ 
+    //   headless: true
+    // });
+
+    const browser = await chromium.launch({
+      headless: false,
+      args: ['--start-maximized'],
+      slowMo: 50,
     });
+
     
     const page = await browser.newPage();
 
@@ -46,6 +54,10 @@ Actor.main(async () => {
         results = await scrapeSamGov({ page, maxItems, webhookUrl, webhookSecret });
         break;
         
+      case 'merx':
+        sourceName = 'Merx';
+        results = await scrapeMerx({ page, maxItems, webhookUrl, webhookSecret });
+        break;
       // Easy to add new sources:
       // case 'newsource':
       //   sourceName = 'New Source';

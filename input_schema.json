@@ -8,8 +8,8 @@
       "type": "string",
       "description": "Select which portal to scrape",
       "editor": "select",
-      "enum": ["ontario", "samgov"],
-      "enumTitles": ["Ontario Tenders Portal", "SAM.gov"],
+      "enum": ["ontario", "samgov", "merx"],
+      "enumTitles": ["Ontario Tenders Portal", "SAM.gov", "Merx"],
       "default": "ontario"
     },
     "webhookUrl": {
