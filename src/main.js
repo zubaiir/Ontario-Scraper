@@ -5,6 +5,7 @@ const { chromium } = require('playwright');
 const { scrapeOntario } = require('./scrapers/ontario');
 const { scrapeSamGov } = require('./scrapers/samgov');
 const { scrapeMerx } = require('./scrapers/merx');
+const { scrapeBostonBids } = require('./scrapers/boston');
 
 // ==================== MAIN ACTOR ====================
 Actor.main(async () => {
@@ -52,6 +53,11 @@ Actor.main(async () => {
       case 'merx':
         sourceName = 'Merx';
         results = await scrapeMerx({ page, maxItems, webhookUrl, webhookSecret });
+        break;
+
+      case 'boston':
+        sourceName = 'Boston';
+        results = await scrapeBostonBids({ page, maxItems, webhookUrl, webhookSecret });
         break;
 
       // Easy to add new sources:

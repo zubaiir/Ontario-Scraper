@@ -1,8 +1,8 @@
 {
-  "source": "merx",
-  "webhookUrl": "https://google.com",
+  "source": "boston",
+  "webhookUrl": "https://ezsoyvbanojrprtvgtly.supabase.co/functions/v1/webhooks-apify",
   "webhookSecret": "12345",
   "maxItems": 5,
   "debug": true,
-  "headless": false
+  "headless": true
 }
