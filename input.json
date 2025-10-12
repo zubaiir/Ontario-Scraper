@@ -1,7 +1,8 @@
 {
   "source": "merx",
-  "webhookUrl": "https://ezsoyvbanojrprtvgtly.supabase.co/functions/v1/webhooks-apify",
+  "webhookUrl": "https://google.com",
   "webhookSecret": "12345",
   "maxItems": 5,
-  "debug": true
+  "debug": true,
+  "headless": false
 }

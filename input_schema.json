@@ -37,6 +37,12 @@
       "type": "boolean",
       "description": "Run in debug mode with slower execution",
       "default": false
+    },
+    "headless": {
+      "title": "Headless Mode",
+      "type": "boolean",
+      "description": "Run in headless mode with slower execution",
+      "default": true
     }
   },
   "required": ["source", "webhookUrl", "webhookSecret"]

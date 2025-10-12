@@ -15,28 +15,23 @@ Actor.main(async () => {
     webhookUrl = '', 
     webhookSecret = '', 
     maxItems = 5,
-    debug = false
+    debug = false,
+    headless = true,
   } = input || {};
 
   console.log('=== Multi-Portal Scraper Started ===');
   console.log(`Source: ${source}`);
   console.log(`Debug mode: ${debug}`);
+  console.log(`Headless mode: ${headless}`);
   console.log(`Max items: ${maxItems || 'all'}`);
   console.log(`Webhook configured: ${webhookUrl ? 'Yes' : 'No (test mode)'}`);
   console.log('=====================================\n');
 
   try {
-    // const browser = await chromium.launch({ 
-    //   headless: true
-    // });
-
-    const browser = await chromium.launch({
-      headless: false,
-      args: ['--start-maximized'],
-      slowMo: 50,
+    const browser = await chromium.launch({ 
+      headless: headless,
     });
 
-    
     const page = await browser.newPage();
 
     let results = [];
@@ -58,6 +53,7 @@ Actor.main(async () => {
         sourceName = 'Merx';
         results = await scrapeMerx({ page, maxItems, webhookUrl, webhookSecret });
         break;
+
       // Easy to add new sources:
       // case 'newsource':
       //   sourceName = 'New Source';
