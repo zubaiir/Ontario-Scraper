@@ -1,6 +1,8 @@
 const { Actor, Dataset } = require('apify');
 const { chromium } = require('playwright');
 
+// https://vaughan.bidsandtenders.ca/Module/Tenders/en -- Main source client is using in his apify
+
 // Import individual scrapers
 const { scrapeOntario } = require('./scrapers/ontario');
 const { scrapeSamGov } = require('./scrapers/samgov');
