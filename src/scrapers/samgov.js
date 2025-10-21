@@ -244,7 +244,7 @@ async function scrapeSamGov({ page, maxItems, webhookUrl, webhookSecret }) {
         category: detailData.contractType || item.category,
         listing_expiry_date: detailData.responseDate,
         portal_url: `https://sam.gov${item.detailUrl}`,
-        city: detailData.placeOfPerformance || 'United States',
+        city: 'United States',
         portal_source: 'SAM.gov',
         
         project_code: `samgov_${detailData.noticeId || item.project_reference}`,
