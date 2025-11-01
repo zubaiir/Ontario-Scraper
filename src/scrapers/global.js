@@ -144,7 +144,7 @@ async function scrapeSource(source, page, options = {}) {
  */
 async function scrapeGlobalBids(options = {}) {
   const {
-    csvPath = '../../input.csv',
+    csvPath = './input.csv',
     maxItems = 10,
     maxSources = 0, // 0 = all sources
     webhookUrl = '',

@@ -8,7 +8,9 @@
   "dependencies": {
     "apify": "^3.5.0",
     "crawlee": "^3.5.0",
-    "playwright": "^1.56.0"
+    "csv-parser": "^3.2.0",
+    "playwright": "^1.56.0",
+    "puppeteer": "^24.27.0"
   },
   "devDependencies": {
     "@apify/tsconfig": "^0.1.0",
