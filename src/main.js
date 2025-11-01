@@ -8,6 +8,7 @@ const { scrapeOntario } = require('./scrapers/ontario');
 const { scrapeSamGov } = require('./scrapers/samgov');
 const { scrapeMerx } = require('./scrapers/merx');
 const { scrapeBostonBids } = require('./scrapers/boston');
+const { scrapeGlobalBids } = require('./scrapers/global');
 
 // ==================== MAIN ACTOR ====================
 Actor.main(async () => {
@@ -60,6 +61,11 @@ Actor.main(async () => {
       case 'boston':
         sourceName = 'Boston';
         results = await scrapeBostonBids({ page, maxItems, webhookUrl, webhookSecret });
+        break;
+
+      case 'global':
+        sourceName = 'Global';
+        results = await scrapeGlobalBids({ page, maxItems, webhookUrl, webhookSecret });
         break;
 
       // Easy to add new sources:
