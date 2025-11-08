@@ -8,8 +8,8 @@
       "type": "string",
       "description": "Select which portal to scrape",
       "editor": "select",
-      "enum": ["ontario", "samgov", "merx", "boston", "global"],
-      "enumTitles": ["Ontario Tenders Portal", "SAM.gov", "Merx", "Boston", "Global"],
+      "enum": ["ontario", "samgov", "merx", "boston", "global", "albertapurchasing", "bcbid", "newbrunswick", "novascotia", "saskatchewan", "ionwave", "bidnet", "bonfire", "opengov", "publicpurchase", "vermont", "newfoundland", "cfta", "bidscanada", "bidcentral", "ampquebec"],
+      "enumTitles": ["Ontario Tenders Portal", "SAM.gov", "Merx", "Boston", "Global", "Alberta Purchasing Connection", "BC Bid", "New Brunswick", "Nova Scotia", "Saskatchewan", "Ionwave", "BidNet", "Bonfire", "OpenGov", "Public Purchase", "Vermont", "Newfoundland and Labrador", "CFTA", "Bids Canada", "BidCentral", "AMQ Quebec"],
       "default": "ontario"
     },
     "webhookUrl": {
