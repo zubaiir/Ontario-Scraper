@@ -257,14 +257,6 @@ Actor.main(async () => {
         }
       }
       
-      console.log('\n========== WEBHOOK SUMMARY ==========');
-      console.log(`Total batches: ${totalBatches}`);
-      console.log(`Successful: ${successfulBatches}`);
-      console.log(`Failed: ${failedBatches}`);
-      console.log('=====================================\n');
-      
-    } else {
-      console.log('\n⚠️  No webhook URL provided or no data to send');
     }
     
     const summary = {
