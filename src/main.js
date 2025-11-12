@@ -181,7 +181,6 @@ Actor.main(async () => {
       }
     } catch (scraperError) {
       console.error(`⚠️ Scraper encountered an issue: ${scraperError.message}`);
-      // Don't throw - let it continue with empty results
       results = results || [];
     }
 
@@ -286,7 +285,6 @@ Actor.main(async () => {
 
   } catch (error) {
     console.error('⚠️ Actor error:', error.message);
-    // Don't throw - let Apify mark as succeeded even with errors
   } finally {
     if (browser) {
       await browser.close();
