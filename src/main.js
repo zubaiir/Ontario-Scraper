@@ -8,6 +8,7 @@ const { scrapeOntario } = require('./scrapers/ontario');
 const { scrapeSamGov } = require('./scrapers/samgov');
 const { scrapeMerx } = require('./scrapers/merx');
 const { scrapeBostonBids } = require('./scrapers/boston');
+const { scrapeBidsAndTenders } = require('./scrapers/bidsandtenders');
 const { scrapeGlobalBids } = require('./scrapers/global');
 
 // ==================== MAIN ACTOR ====================
@@ -61,6 +62,11 @@ Actor.main(async () => {
       case 'boston':
         sourceName = 'Boston';
         results = await scrapeBostonBids({ page, maxItems, webhookUrl, webhookSecret });
+        break;
+
+      case 'bidsandtenders':
+        sourceName = 'Bids&Tenders';
+        results = await scrapeBidsAndTenders({ page, maxItems, webhookUrl, webhookSecret });
         break;
 
       case 'global':

@@ -1,308 +1,428 @@
 const { generateFingerprint } = require('../utils');
 
-const FAMILY_KEYWORD = 'bidsandtenders.ca';
+/**
+ * Bids & Tenders Family Scraper
+ *
+ * Portals:
+ * - https://nlhydro.bidsandtenders.ca/Module/Tenders/
+ * - https://mississauga.bidsandtenders.ca/Module/Tenders/
+ * - https://rmwb.bidsandtenders.ca/Module/Tenders/en/
+ * - https://saskatoon.bidsandtenders.ca/Module/Tenders/
+ * - https://stjohns.bidsandtenders.ca/Module/Tenders/
+ */
 
-function deriveTargetsFromSources(sources = []) {
-  const targets = [];
-  const seen = new Set();
-
-  for (const src of sources) {
-    if (!src || !src.url) continue;
-    try {
-      const url = new URL(src.url);
-      if (!url.hostname.endsWith(FAMILY_KEYWORD)) continue;
-
-      // Normalize to the portal's tenders module root
-      // e.g. https://richmond.bidsandtenders.ca/Module/Tenders/en
-      let base = `${url.protocol}//${url.hostname}`;
-      const path = url.pathname.toLowerCase();
-
-      if (path.includes('/module/tenders')) {
-        // Trim to /Module/Tenders/en if present; otherwise /Module/Tenders
-        const idx = path.indexOf('/module/tenders');
-        base += url.pathname.substring(0, idx + '/Module/Tenders'.length);
-      } else {
-        base += '/Module/Tenders';
-      }
-
-      const listUrl = base.endsWith('/')
-        ? `${base}en`
-        : `${base}/en`;
-
-      if (seen.has(listUrl)) continue;
-      seen.add(listUrl);
-
-      targets.push({
-        key: `bidsandtenders-${url.hostname.replace(/\./g, '-')}`,
-        label: `${url.hostname} - Bids&Tenders`,
-        listUrl,
-      });
-    } catch {
-      continue;
-    }
-  }
-
-  return targets;
-}
-
-// Fallback if no sources provided: still looks intentional.
-const GENERIC_TARGETS = [
+const PORTALS = [
   {
-    key: 'bidsandtenders-generic',
-    label: 'Bids&Tenders - Generic',
-    listUrl: 'https://bidsandtenders.ca/Module/Tenders/en',
+    key: 'nlhydro',
+    label: 'Bids&Tenders - NL Hydro',
+    listUrl: 'https://nlhydro.bidsandtenders.ca/Module/Tenders/en/',
+    regionHint: 'NL',
+  },
+  {
+    key: 'mississauga',
+    label: 'Bids&Tenders - Mississauga',
+    listUrl: 'https://mississauga.bidsandtenders.ca/Module/Tenders/',
+    regionHint: 'ON',
+  },
+  {
+    key: 'rmwb',
+    label: 'Bids&Tenders - RMWB',
+    listUrl: 'https://rmwb.bidsandtenders.ca/Module/Tenders/en/',
+    regionHint: 'AB',
+  },
+  {
+    key: 'saskatoon',
+    label: 'Bids&Tenders - Saskatoon',
+    listUrl: 'https://saskatoon.bidsandtenders.ca/Module/Tenders/en/',
+    regionHint: 'SK',
+  },
+  {
+    key: 'stjohns',
+    label: 'Bids&Tenders - St. John’s',
+    listUrl: 'https://stjohns.bidsandtenders.ca/Module/Tenders/en/',
+    regionHint: 'NL',
   },
 ];
 
-async function scrapeBidsAndTenders({ page, sources = [], maxItems = 80 }) {
-  console.log('🔍 Starting Bids & Tenders family scrape...');
+// const PER_PORTAL_LIMIT = 2; // Max bids to scrape per Bids&Tenders portal
 
-  const dynamicTargets = deriveTargetsFromSources(sources);
-  const targets =
-    dynamicTargets.length > 0 ? dynamicTargets : GENERIC_TARGETS;
+async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
+  console.log('=== Bids & Tenders Family Scraper Started ===');
+  console.log(`Target portals: ${PORTALS.map(p => p.key).join(', ')}`);
+  console.log(`Max items: ${maxItems}`);
+  console.log('=============================================');
 
   const results = [];
-  const perPortalLimit = Math.max(5, Math.floor(maxItems / targets.length));
+  const perPortalLimit = Math.max(
+    30,
+    PORTALS.length ? Math.floor(maxItems / PORTALS.length) || maxItems : maxItems
+  );
 
-  for (const target of targets) {
+  for (const portal of PORTALS) {
     if (results.length >= maxItems) break;
-    console.log(`\n➡️ Scraping: ${target.label}`);
+
+    console.log(`\n➡️  Scraping portal: ${portal.label}`);
+    console.log(`URL: ${portal.listUrl}`);
+
     try {
-      await page.goto(target.listUrl, {
+      await page.goto(portal.listUrl, {
         waitUntil: 'domcontentloaded',
         timeout: 120000,
       });
 
       await page.setViewportSize({ width: 1920, height: 1080 });
-      await page.waitForTimeout(2000);
+      await page.waitForLoadState('networkidle').catch(() => {});
+      await page.waitForTimeout(3000);
 
-      await waitForAnySelector(page, [
-        'table tbody tr a[href*="/Tender/Detail/"]',
-        '.tenderTable tbody tr',
-        '.tender-list .tender',
-        '.search-results .row a[href*="/Tender/Detail/"]',
-      ]);
+      // await waitForAnySelector(page, [
+      //   'table[aria-readonly="true"] tbody tr', 
+      //   'table tbody tr a[href*="/Tender/Detail/"]',
+      //   'table.tenders-table tbody tr',
+      //   '.tenderTable tbody tr',
+      //   '.tender-list .tender',
+      //   '.search-results .row a[href*="/Tender/Detail/"]',
+      // ], 60000);
 
-      const listItems = await page.$$eval(
-        [
-          'table tbody tr',
-          '.tenderTable tbody tr',
-          '.tender-list .tender',
-          '.search-results .row',
-        ].join(','),
-        (rows, { portalLabel }) => {
-          const items = [];
-          const seen = new Set();
+      // Special handling for repeater-based portals
+let listItems;
+if (portal.key === 'nlhydro' || portal.key === 'stjohns') {
+  await waitForRepeaterRows(page, 60000);
+  listItems = await page.$$eval('tbody[data-container="true"] > tr', (rows, { portalLabel }) => {
+    const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
+    const items = [];
+    const origin = window.location.origin;
 
-          for (const row of rows) {
-            const linkEl =
-              row.querySelector('a[href*="/Tender/Detail/"]') ||
-              row.querySelector('a[href*="Tender/Detail"]') ||
-              row.querySelector('a[href*="/tender/"]') ||
-              row.querySelector('a');
+    for (let i = 0; i < rows.length - 1; i += 2) {
+      const dataRow = rows[i];
+      const actionRow = rows[i + 1];
 
-            if (!linkEl) continue;
+      const title = norm(dataRow.querySelector('strong')?.textContent || '');
+      if (!title) continue;
 
-            const href = linkEl.getAttribute('href') || '';
-            if (!href) continue;
+      const tds = Array.from(dataRow.querySelectorAll('td'));
+      const status = norm(tds[1]?.textContent || '');
+      const closing = norm(tds[2]?.textContent || '');
+      const daysLeft = norm(tds[3]?.textContent || '');
 
-            const url = href.startsWith('http')
-              ? href
-              : new URL(href, window.location.origin).toString();
+      const detailsAnchor =
+        actionRow.querySelector('a[href*="/Tender/Detail/"]') ||
+        actionRow.querySelector('a[href*="Tender/Detail"]');
 
-            if (seen.has(url)) continue;
-            seen.add(url);
+      const href = detailsAnchor?.getAttribute('href') || '';
+      const portal_url = href
+        ? (href.startsWith('http') ? href : new URL(href, origin).toString())
+        : '';
 
-            const title =
-              (linkEl.innerText || '').trim() ||
-              row.querySelector('.tender-title')?.textContent.trim() ||
-              row.querySelector('td:nth-child(1)')?.textContent.trim() ||
-              '';
-            if (!title) continue;
+      let project_reference = '';
+      const prefix = title.split('-')[0];
+      if (prefix && /\d/.test(prefix)) project_reference = norm(prefix);
 
-            const agency =
-              row.querySelector('.tender-owner')?.textContent.trim() ||
-              row.querySelector('td[data-title="Organization"]')
-                ?.textContent.trim() ||
-              '';
+      items.push({
+        title,
+        status,
+        agency: '',
+        region: '',
+        created_at: '',
+        listing_expiry_date: closing,
+        daysLeft,
+        project_reference,
+        portal_url,
+        portal_source: portalLabel,
+      });
+    }
 
-            const region =
-              row.querySelector('td[data-title="Location"]')
-                ?.textContent.trim() || '';
+    return items;
+  }, { portalLabel: portal.label });
+} else {
+  // Generic extraction for other portals
+  await waitForAnySelector(page, [
+    'tbody[data-container="true"] tr',
+    'table.table tbody tr',
+    'table.tenders-table tbody tr',
+    '.tenderTable tbody tr',
+    '.tender-list .tender',
+    '.search-results .row a[href*="/Tender/Detail/"]',
+  ], 60000);
 
-            const created_at =
-              row.querySelector(
-                'td[data-title="Published Date"], td[data-title="Issue Date"]'
-              )?.textContent.trim() || '';
+  listItems = await page.$$eval(
+    [
+      'table tbody tr',
+      'table.tenders-table tbody tr',
+      '.tenderTable tbody tr',
+      '.tender-list .tender',
+      '.search-results .row',
+    ].join(','),
+    (rows, { portalLabel }) => {
+      const normalize = (str) => (str || '').replace(/\s+/g, ' ').trim();
+      const items = [];
+      const seen = new Set();
 
-            const listing_expiry_date =
-              row.querySelector(
-                'td[data-title="Closing Date"], td[data-title="Closing"]'
-              )?.textContent.trim() || '';
+      for (const row of rows) {
+        let linkRow = row;
+        let linkEl =
+          linkRow.querySelector('a[href*="/Tender/Detail/"]') ||
+          linkRow.querySelector('a[href*="Tender/Detail"]');
 
-            const daysLeft =
-              row.querySelector('.tender-days-left')?.textContent.trim() ||
-              '';
-
-            const project_reference =
-              row.querySelector(
-                'td[data-title="Reference Number"], td[data-title="Bid No."]'
-              )?.textContent.trim() || '';
-
-            items.push({
-              title,
-              agency,
-              region,
-              created_at,
-              listing_expiry_date,
-              daysLeft,
-              project_reference,
-              portal_url: url,
-              portal_source: portalLabel,
-            });
+        if (!linkEl) {
+          const next = row.nextElementSibling;
+          if (next) {
+            const maybeLink =
+              next.querySelector('a[href*="/Tender/Detail/"]') ||
+              next.querySelector('a[href*="Tender/Detail"]');
+            if (maybeLink) {
+              linkRow = next;
+              linkEl = maybeLink;
+            }
           }
+        }
 
-          return items;
-        },
-        { portalLabel: target.label }
-      );
+        if (!linkEl) continue;
+        const href = linkEl.getAttribute('href') || '';
+        if (!href) continue;
+        const url = href.startsWith('http')
+          ? href
+          : new URL(href, window.location.origin).toString();
+        if (seen.has(url)) continue;
+        seen.add(url);
+
+        const tds = linkRow.previousElementSibling
+          ? linkRow.previousElementSibling.querySelectorAll('td')
+          : linkRow.querySelectorAll('td');
+
+        const title = normalize(tds[0]?.textContent || linkEl.textContent || '');
+        const status = normalize(tds[1]?.textContent || '');
+        const listing_expiry_date = normalize(tds[2]?.textContent || '');
+        const daysLeft = normalize(tds[3]?.textContent || '');
+        const project_reference = '';
+        const agency = '';
+        const region = '';
+
+        items.push({
+          title,
+          status,
+          agency,
+          region,
+          created_at: '',
+          listing_expiry_date,
+          daysLeft,
+          project_reference,
+          portal_url: url,
+          portal_source: portalLabel,
+        });
+      }
+      return items;
+    },
+    { portalLabel: portal.label }
+  );
+}
+
+
+      console.log(`Found ${listItems.length} rows on ${portal.label}`);
 
       if (!listItems.length) {
-        console.log(`No rows detected for ${target.label}`);
+        console.warn(`⚠️  No list items parsed for ${portal.label}, skipping portal.`);
         continue;
       }
 
-      console.log(
-        `Found ${listItems.length} for ${target.label} (capping at ${perPortalLimit}).`
-      );
+      const itemsToProcess = listItems.slice(0, perPortalLimit);
+      // const itemsToProcess = listItems.slice(
+      //   0,
+      //   Math.min(PER_PORTAL_LIMIT, listItems.length, maxItems - results.length)
+      // );
 
-      const sliced = listItems.slice(0, perPortalLimit);
+      for (let i = 0; i < itemsToProcess.length && results.length < maxItems; i++) {
+        const item = itemsToProcess[i];
 
-      for (const item of sliced) {
-        if (results.length >= maxItems) break;
+        console.log(
+          `\n--- [${portal.key}] ${i + 1}/${itemsToProcess.length}: "${item.title}" ---`
+        );
+        if (!item.portal_url) {
+          console.warn('Missing portal_url, skipping.');
+          continue;
+        }
+
         try {
-          console.log(`🔗 Detail: ${item.portal_url}`);
           await page.goto(item.portal_url, {
             waitUntil: 'domcontentloaded',
             timeout: 120000,
           });
+          await page.waitForTimeout(2000);
 
-          await page.waitForTimeout(1500);
-          await waitForAnySelector(page, [
-            '.tender-detail',
-            '.bt-tender-details',
-            '.content',
-            'main',
-          ]);
+          // Check for "login required" style messages
+          const bodyText = (await page.textContent('body').catch(() => '')) || '';
+          if (/must login to your account/i.test(bodyText)) {
+            console.warn('Login required; saving basic data only.');
+
+            const fingerprint = generateFingerprint(
+              `${item.title}${item.project_reference || ''}${
+                item.listing_expiry_date || ''
+              }${portal.key}`
+            );
+
+            results.push({
+              id: fingerprint,
+              title: item.title,
+              agency: item.agency || '',
+              region: item.region || portal.regionHint || '',
+              created_at: item.created_at || '',
+              listing_expiry_date: item.listing_expiry_date || '',
+              daysLeft: item.daysLeft || '',
+              project_reference: item.project_reference || '',
+              portal_url: item.portal_url,
+              portal_source: item.portal_source,
+              project_reference_detail: '',
+              buyer_organization_detail: item.agency || '',
+              project_type: '',
+              agreement_type: '',
+              city: '',
+              contact_person: '',
+              contact_phone: '',
+              contact_email: '',
+              detailed_description:
+                'Login required to view full bid details on this Bids & Tenders portal.',
+              hash_fingerprint: fingerprint,
+            });
+
+            await safeGoBackToList(page, portal.listUrl);
+            continue;
+          }
 
           const detailData = await page.evaluate(() => {
-            const getByLabel = (labels) => {
-              const wanted = Array.isArray(labels) ? labels : [labels];
-              const rows = Array.from(
-                document.querySelectorAll(
-                  '.tender-detail-row, .bt-row, tr, .field-row'
-                )
-              );
+            const normalize = (str) =>
+              (str || '').replace(/\s+/g, ' ').trim();
+
+            const findInTable = (labelCandidates) => {
+              const rows = Array.from(document.querySelectorAll('table tr'));
+              const match = (label, wanted) => {
+                const l = label.toLowerCase();
+                return wanted.some((w) => l.includes(w));
+              };
 
               for (const row of rows) {
-                const labelEl =
-                  row.querySelector('.label, .bt-label, th') ||
-                  row.firstElementChild;
-                const valueEl =
-                  row.querySelector('.value, .bt-value, td:last-child') ||
-                  row.lastElementChild;
+                const th = row.querySelector('th');
+                const labelCell =
+                  th ||
+                  row.querySelector('td.col-label') ||
+                  null;
 
-                const labelText =
-                  labelEl?.textContent?.trim().toLowerCase() || '';
-                const valueText = valueEl?.textContent?.trim() || '';
-                if (!labelText || !valueText) continue;
+                if (!labelCell) continue;
 
-                if (
-                  wanted.some((w) =>
-                    labelText.includes(w.toLowerCase())
-                  )
-                ) {
-                  return valueText;
-                }
+                const labelText = normalize(labelCell.textContent || '');
+                if (!labelText) continue;
+
+                if (!match(labelText, labelCandidates)) continue;
+
+                const valueCell =
+                  row.querySelector('td:not(.col-label)') ||
+                  row.cells[1] ||
+                  null;
+
+                if (!valueCell) return '';
+                return normalize(valueCell.textContent || '');
               }
+
               return '';
             };
 
-            const contactBlocks = Array.from(
-              document.querySelectorAll(
-                '.tender-contact, .contact, .bt-contact, .tender-detail, main'
-              )
-            )
-              .map((el) => el.innerText || '')
-              .join('\n');
-
-            let contact_email = '';
-            let contact_phone = '';
+            // Contact info heuristics
             let contact_person = '';
+            let contact_phone = '';
+            let contact_email = '';
 
-            if (contactBlocks) {
-              const emailMatch = contactBlocks.match(
-                /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i
-              );
-              const phoneMatch = contactBlocks.match(
-                /(\+?\d[\d\s().-]{7,}\d)/
-              );
+            const contactRoots = Array.from(
+              document.querySelectorAll(
+                '#ContactInformation, #ContactInfo, .contact, .contact-info, .x-panel-body, .col-md-12'
+              )
+            );
 
-              contact_email = emailMatch ? emailMatch[0] : '';
-              contact_phone = phoneMatch ? phoneMatch[0].trim() : '';
+            const textBlocks = contactRoots
+              .map((el) => normalize(el.textContent || ''))
+              .filter(Boolean);
 
-              const lines = contactBlocks
-                .split('\n')
-                .map((l) => l.trim())
-                .filter(Boolean);
-              const nameLine =
-                lines.find(
-                  (l) => /contact/i.test(l) && /\s/.test(l)
-                ) ||
-                lines.find(
-                  (l) => /^[A-Za-z\s.'-]{5,}$/.test(l)
-                );
-              if (nameLine) {
-                contact_person = nameLine
-                  .replace(/contact[:\s]*/i, '')
-                  .trim();
+            for (const text of textBlocks) {
+              if (!contact_email) {
+                const m = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
+                if (m) contact_email = m[0];
               }
+
+              if (!contact_phone) {
+                const m = text.match(/(\+?\d[\d\s().-]{7,}\d)/);
+                if (m) contact_phone = m[0];
+              }
+
+              if (!contact_person) {
+                const line = text
+                  .split(/[\r\n]/)
+                  .map((l) => l.trim())
+                  .find(
+                    (l) =>
+                      /^[A-Za-z ,.'-]{5,}$/.test(l) &&
+                      !l.includes('@') &&
+                      !/\d/.test(l)
+                  );
+                if (line) contact_person = line;
+              }
+
+              if (contact_person && contact_phone && contact_email) break;
             }
 
-            const detailed_description =
+            const project_reference_detail =
+              findInTable([
+                'bid number',
+                'tender number',
+                'reference number',
+                'solicitation number',
+              ]) || '';
+
+            const buyer_organization_detail =
+              findInTable([
+                'organization',
+                'purchasing organization',
+                'buyer',
+                'department',
+              ]) || '';
+
+            const project_type =
+              findInTable([
+                'bid type',
+                'bid classification',
+                'procurement type',
+                'tender type',
+              ]) || '';
+
+            const agreement_type =
+              findInTable(['agreement type', 'trade agreement']) || '';
+
+            const city =
+              findInTable(['location', 'address', 'city']) || '';
+
+            const created_at =
+              findInTable(['issue date', 'published date']) || '';
+
+            const listing_expiry_date_detail =
+              findInTable([
+                'closing date',
+                'bid closing date',
+                'submission deadline',
+              ]) || '';
+
+            // Description: prefer dedicated panels if present
+            const descEl =
               document.querySelector(
-                '.tender-description, .bt-description, #content, main'
-              )?.innerText
-                .trim()
-                .slice(0, 4000) || '';
+                '#Description, #BidDescription, #ctl00_Content_pnlBidDescription, .bid-description'
+              ) ||
+              document.querySelector('.x-panel-body');
+
+            const detailed_description = normalize(descEl?.textContent || '');
 
             return {
-              project_reference_detail:
-                getByLabel([
-                  'Bid No.',
-                  'Reference Number',
-                  'Solicitation Number',
-                  'Number',
-                ]) || '',
-              buyer_organization_detail:
-                getByLabel([
-                  'Organization',
-                  'Purchasing Organization',
-                  'Agency',
-                  'Owner',
-                ]) || '',
-              project_type:
-                getByLabel([
-                  'Bid Type',
-                  'Procurement Type',
-                  'Category',
-                ]) || '',
-              agreement_type:
-                getByLabel([
-                  'Agreement Type',
-                  'Contract Type',
-                ]) || '',
-              city: getByLabel(['Location', 'City']) || '',
+              project_reference_detail,
+              buyer_organization_detail,
+              project_type,
+              agreement_type,
+              city,
+              created_at,
+              listing_expiry_date_detail,
               contact_person,
               contact_phone,
               contact_email,
@@ -310,69 +430,188 @@ async function scrapeBidsAndTenders({ page, sources = [], maxItems = 80 }) {
             };
           });
 
-          const merged = { ...item, ...detailData };
-          const fp = generateFingerprint(
+          const merged = {
+            title: item.title,
+            agency:
+              item.agency ||
+              detailData.buyer_organization_detail ||
+              '',
+            region:
+              item.region ||
+              portal.regionHint ||
+              '',
+            status: item.status || '',
+            created_at:
+              detailData.created_at ||
+              item.created_at ||
+              '',
+            listing_expiry_date:
+              detailData.listing_expiry_date_detail ||
+              item.listing_expiry_date ||
+              '',
+            daysLeft: item.daysLeft || '',
+            project_reference:
+              detailData.project_reference_detail ||
+              item.project_reference ||
+              '',
+            portal_url: item.portal_url,
+            portal_source: item.portal_source,
+            project_reference_detail:
+              detailData.project_reference_detail || '',
+            buyer_organization_detail:
+              detailData.buyer_organization_detail ||
+              item.agency ||
+              '',
+            project_type: detailData.project_type || '',
+            agreement_type: detailData.agreement_type || '',
+            city: detailData.city || '',
+            contact_person: detailData.contact_person || '',
+            contact_phone: detailData.contact_phone || '',
+            contact_email: detailData.contact_email || '',
+            detailed_description: detailData.detailed_description || '',
+          };
+
+          const fingerprint = generateFingerprint(
             `${merged.title}${merged.project_reference || ''}${
               merged.listing_expiry_date || ''
-            }${target.key}`
+            }${portal.key}`
           );
 
           results.push({
-            id: fp,
+            id: fingerprint,
             ...merged,
-            hash_fingerprint: fp,
+            hash_fingerprint: fingerprint,
           });
 
-          console.log(`✅ Captured: ${merged.title}`);
-          await page.waitForTimeout(400);
-        } catch (detailErr) {
+          console.log(`✅ Saved: ${merged.title}`);
+
+          await safeGoBackToList(page, portal.listUrl);
+        } catch (err) {
           console.warn(
-            `⚠️ Detail failed for ${item.portal_url}: ${detailErr.message}`
+            `⚠️  Failed details for "${item.title}" on ${portal.key}: ${err.message}`
           );
 
-          const fp = generateFingerprint(
+          const fingerprint = generateFingerprint(
             `${item.title}${item.project_reference || ''}${
               item.listing_expiry_date || ''
-            }${target.key}`
+            }${portal.key}`
           );
 
           results.push({
-            id: fp,
-            ...item,
-            project_reference_detail: item.project_reference || '',
-            detailed_description:
-              'Partial metadata captured from listing. Some information may require login or manual review.',
-            hash_fingerprint: fp,
+            id: fingerprint,
+            title: item.title,
+            agency: item.agency || '',
+            region: item.region || portal.regionHint || '',
+            status: item.status || '',
+            created_at: item.created_at || '',
+            listing_expiry_date: item.listing_expiry_date || '',
+            daysLeft: item.daysLeft || '',
+            project_reference: item.project_reference || '',
+            portal_url: item.portal_url,
+            portal_source: item.portal_source,
+            project_reference_detail: '',
+            buyer_organization_detail: item.agency || '',
+            project_type: '',
+            agreement_type: '',
+            city: '',
+            contact_person: '',
+            contact_phone: '',
+            contact_email: '',
+            detailed_description: '',
+            hash_fingerprint: fingerprint,
           });
+
+          await safeGoBackToList(page, portal.listUrl);
         }
       }
-    } catch (err) {
-      console.warn(`⚠️ Failed for ${target.label}: ${err.message}`);
-      continue;
+    } catch (error) {
+      console.error(`❌ Portal failed: ${portal.label}`, error.message);
     }
   }
 
   console.log(
-    `\n🏁 Bids & Tenders family scrape complete with ${results.length} records.`
+    `\n✅ Bids & Tenders family scrape complete with ${results.length} records`
   );
   return results;
 }
 
 /**
- * Utility: wait for first selector to appear.
+ * Wait for any of the given selectors to appear.
  */
 async function waitForAnySelector(page, selectors, timeout = 60000) {
   const start = Date.now();
+
   while (Date.now() - start < timeout) {
     for (const sel of selectors) {
-      const el = await page.$(sel);
-      if (el) return;
+      try {
+        const el = await page.$(sel);
+        if (el) return;
+      } catch {
+        // ignore
+      }
     }
     await page.waitForTimeout(500);
   }
+
   throw new Error(
-    `None of the expected selectors appeared: ${selectors.join(', ')}`
+    `None of the selectors appeared within ${timeout}ms: ${selectors.join(', ')}`
   );
+}
+
+/**
+ * Safely navigate back to the list page for the current portal.
+ */
+async function safeGoBackToList(page, listUrl) {
+  try {
+    await page.goBack({ waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1500);
+  } catch {
+    try {
+      await page.goto(listUrl, {
+        waitUntil: 'domcontentloaded',
+        timeout: 120000,
+      });
+      await page.waitForTimeout(2000);
+    } catch (e) {
+      console.warn('⚠️  Failed to return to list page:', e.message);
+    }
+  }
+}
+
+async function waitForRepeaterRows(page, timeout = 60000) {
+  const start = Date.now();
+  console.log('⏳ Waiting for repeater rows to render…');
+
+  // Wait for full hydration (network requests to settle)
+  await page.waitForLoadState('networkidle').catch(() => {});
+  await page.waitForTimeout(3000);
+
+  // Try forcing Vue/React render via small scrolls & events
+  while (Date.now() - start < timeout) {
+    const count = await page
+      .$$eval('tbody[data-container="true"] > tr', els => els.length)
+      .catch(() => 0);
+
+    if (count >= 2) {
+      console.log(`✅ Repeater rows detected (${count})`);
+      return;
+    }
+
+    // trigger Vue hydration by interacting slightly
+    await page.mouse.wheel(0, 500);
+    await page.mouse.move(300, 400);
+    await page.evaluate(() => {
+      window.dispatchEvent(new Event('scroll'));
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    await page.waitForTimeout(1200);
+  }
+
+  // Final diagnostic: dump visible body text snippet
+  const snippet = (await page.textContent('body').catch(() => '') || '').slice(0, 300);
+  console.warn('⚠️ Timeout: no repeater rows. Body starts with:\n', snippet);
+  throw new Error('Repeater rows did not appear (tbody[data-container="true"] > tr)');
 }
 
 module.exports = { scrapeBidsAndTenders };
