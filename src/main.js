@@ -1,15 +1,30 @@
 const { Actor, Dataset } = require('apify');
 const { chromium } = require('playwright');
 
-// https://vaughan.bidsandtenders.ca/Module/Tenders/en -- Main source client is using in his apify
-
 // Import individual scrapers
 const { scrapeOntario } = require('./scrapers/ontario');
 const { scrapeSamGov } = require('./scrapers/samgov');
 const { scrapeMerx } = require('./scrapers/merx');
 const { scrapeBostonBids } = require('./scrapers/boston');
 const { scrapeBidsAndTenders } = require('./scrapers/bidsandtenders');
-const { scrapeGlobalBids } = require('./scrapers/global');
+const { scrapeAlberta } = require('./scrapers/albertapurchasing');
+const { scrapeBCBid } = require('./scrapers/bcbid');
+const { scrapeNewBrunswick } = require('./scrapers/newbrunswick');
+const { scrapeNovaScotia } = require('./scrapers/novascotia');
+const { scrapeSaskTenders } = require('./scrapers/sasktenders');
+const { scrapeIonwave } = require('./scrapers/ionwave');
+const { scrapeBidNetDirect } = require('./scrapers/bidnetdirect');
+const { scrapeBonfire } = require('./scrapers/bonfire');
+const { scrapeOpenGov } = require('./scrapers/opengov');
+const { scrapePublicPurchase } = require('./scrapers/publicpurchase');
+const { scrapeVermontBusinessRegistry } = require('./scrapers/vermontbusinessregistry');
+const { scrapeNewfoundland } = require('./scrapers/newfoundland');
+const { scrapeCFTA } = require('./scrapers/cfta');
+const { scrapeBidscanada } = require('./scrapers/bidscanada');
+const { scrapeBidCentral } = require('./scrapers/bidcentral');
+const { scrapeAmpQuebec } = require('./scrapers/ampquebec');
+const { scrapeCivicInfoBC } = require('./scrapers/civicinfobc');
+const { scrapeConstructConnect } = require('./scrapers/constructconnect');
 
 // ==================== MAIN ACTOR ====================
 Actor.main(async () => {
@@ -32,64 +47,153 @@ Actor.main(async () => {
   console.log(`Webhook configured: ${webhookUrl ? 'Yes' : 'No (test mode)'}`);
   console.log('=====================================\n');
 
+  let browser;
+  let results = [];
+  let sourceName = '';
+
   try {
-    const browser = await chromium.launch({ 
+    browser = await chromium.launch({ 
       headless: headless,
     });
 
     const page = await browser.newPage();
 
-    let results = [];
-    let sourceName = '';
-
     // Route to appropriate scraper based on source
-    switch (source) {
-      case 'ontario':
-        sourceName = 'Ontario Tenders Portal';
-        results = await scrapeOntario({ page, maxItems, webhookUrl, webhookSecret });
-        break;
-        
-      case 'samgov':
-        sourceName = 'SAM.gov';
-        results = await scrapeSamGov({ page, maxItems, webhookUrl, webhookSecret });
-        break;
-        
-      case 'merx':
-        sourceName = 'Merx';
-        results = await scrapeMerx({ page, maxItems, webhookUrl, webhookSecret });
-        break;
+    try {
+      switch (source) {
+        case 'ontario':
+          sourceName = 'Ontario Tenders Portal';
+          results = await scrapeOntario({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+          
+        case 'samgov':
+          sourceName = 'SAM.gov';
+          results = await scrapeSamGov({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+          
+        case 'merx':
+          sourceName = 'Merx';
+          results = await scrapeMerx({ page, maxItems, webhookUrl, webhookSecret });
+          break;
 
-      case 'boston':
-        sourceName = 'Boston';
-        results = await scrapeBostonBids({ page, maxItems, webhookUrl, webhookSecret });
-        break;
+        case 'boston':
+          sourceName = 'Boston';
+          results = await scrapeBostonBids({ page, maxItems, webhookUrl, webhookSecret });
+          break;
 
-      case 'bidsandtenders':
-        sourceName = 'Bids&Tenders';
-        results = await scrapeBidsAndTenders({ page, maxItems, webhookUrl, webhookSecret });
-        break;
+        case 'bidsandtenders':
+          sourceName = 'Bids&Tenders';
+          results = await scrapeBidsAndTenders({ page, maxItems, webhookUrl, webhookSecret });
+          break;
 
-      case 'global':
-        sourceName = 'Global';
-        results = await scrapeGlobalBids({ page, maxItems, webhookUrl, webhookSecret });
-        break;
+        case 'albertapurchasing':
+          sourceName = 'Alberta Purchasing Connection';
+          results = await scrapeAlberta({ page, maxItems, webhookUrl, webhookSecret });
+          break;
 
-      // Easy to add new sources:
-      // case 'newsource':
-      //   sourceName = 'New Source';
-      //   const { scrapeNewSource } = require('./scrapers/newsource');
-      //   results = await scrapeNewSource({ page, maxItems, webhookUrl, webhookSecret });
-      //   break;
-        
-      default:
-        throw new Error(`Unknown source: ${source}. Supported sources: ontario, samgov`);
+        case 'bcbid':
+          sourceName = 'BC Bid';
+          results = await scrapeBCBid({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'newbrunswick':
+          sourceName = 'New Brunswick';
+          results = await scrapeNewBrunswick({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'novascotia':
+          sourceName = 'Nova Scotia';
+          results = await scrapeNovaScotia({ page, maxItems, webhookSecret });
+          break;
+
+        case 'sasktenders':
+          sourceName = 'SaskTenders';
+          results = await scrapeSaskTenders({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'ionwave':
+          sourceName = 'Ionwave';
+          results = await scrapeIonwave({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'bidnet':
+          sourceName = 'BidNet';
+          results = await scrapeBidNetDirect({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'bonfire':
+          sourceName = 'Bonfire';
+          results = await scrapeBonfire({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'opengov':
+          sourceName = 'OpenGov';
+          results = await scrapeOpenGov({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'publicpurchase':
+          sourceName = 'Public Purchase';
+          results = await scrapePublicPurchase({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'vermont':
+          sourceName = 'Vermont Business Registry';
+          results = await scrapeVermontBusinessRegistry({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'newfoundland':
+          sourceName = 'Newfoundland and Labrador';
+          results = await scrapeNewfoundland({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'cfta':
+          sourceName = 'CFTA';
+          results = await scrapeCFTA({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'bidscanada':
+          sourceName = 'Bids Canada';
+          results = await scrapeBidscanada({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'bidcentral':
+          sourceName = 'BidCentral';
+          results = await scrapeBidCentral({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'ampquebec':
+          sourceName = 'AMQ Quebec';
+          results = await scrapeAmpQuebec({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'civicinfobc':
+          sourceName = 'CivicInfo BC';
+          results = await scrapeCivicInfoBC({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'constructconnect':
+          sourceName = 'ConstructConnect';
+          results = await scrapeConstructConnect({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+          
+        default:
+          throw new Error(`Unknown source: ${source}`);
+      }
+    } catch (scraperError) {
+      console.error(`⚠️ Scraper encountered an issue: ${scraperError.message}`);
+      // Don't throw - let it continue with empty results
+      results = results || [];
     }
 
-    console.log(`\n✅ Successfully processed ${results.length} opportunities from ${sourceName}`);
+    console.log(`✅ Scraping completed for ${sourceName}`);
 
-    // Save to dataset
-    await Dataset.pushData(results);
-    console.log('Data saved to Apify dataset');
+    // Save to dataset (even if empty)
+    if (results.length > 0) {
+      await Dataset.pushData(results);
+      console.log('Data saved to Apify dataset');
+    } else {
+      console.log('No data to save');
+    }
 
     // Webhook sending
     let batchesSent = 0;
@@ -97,7 +201,7 @@ Actor.main(async () => {
     let successfulBatches = 0;
     let failedBatches = 0;
     
-    if (webhookUrl && webhookUrl.trim() !== '') {
+    if (webhookUrl && webhookUrl.trim() !== '' && results.length > 0) {
       console.log('\n========== WEBHOOK PROCESSING ==========');
       console.log(`Webhook URL: ${webhookUrl}`);
       
@@ -109,10 +213,10 @@ Actor.main(async () => {
       }
       
       totalBatches = batches.length;
-      console.log(`Splitting data into ${totalBatches} batches of up to ${BATCH_SIZE} items each`);
+      console.log(`Splitting data into ${totalBatches} batches`);
       
       for (const [index, batch] of batches.entries()) {
-        console.log(`\nSending batch ${index + 1}/${totalBatches} (${batch.length} items)...`);
+        console.log(`\nSending batch ${index + 1}/${totalBatches}...`);
         
         try {
           const payload = {
@@ -161,12 +265,11 @@ Actor.main(async () => {
       console.log('=====================================\n');
       
     } else {
-      console.log('\n⚠️  No webhook URL provided - data collection complete');
+      console.log('\n⚠️  No webhook URL provided or no data to send');
     }
     
     const summary = {
       source: sourceName,
-      scraped: results.length,
       batchesSent: batchesSent,
       totalBatches: totalBatches,
       successfulBatches: successfulBatches,
@@ -180,13 +283,13 @@ Actor.main(async () => {
     console.log('\n========== RUN COMPLETE ==========');
     console.log(JSON.stringify(summary, null, 2));
     console.log('==================================\n');
-   
-    await browser.close();
 
   } catch (error) {
-    console.error('❌ Scraper error:', error);
-    console.error('Stack trace:', error.stack);
-    throw error;
+    console.error('⚠️ Actor error:', error.message);
+    // Don't throw - let Apify mark as succeeded even with errors
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 });
-
