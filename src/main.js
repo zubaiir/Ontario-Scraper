@@ -180,7 +180,7 @@ Actor.main(async () => {
     console.log('\n========== RUN COMPLETE ==========');
     console.log(JSON.stringify(summary, null, 2));
     console.log('==================================\n');
-
+   
     await browser.close();
 
   } catch (error) {
@@ -189,3 +189,4 @@ Actor.main(async () => {
     throw error;
   }
 });
+
