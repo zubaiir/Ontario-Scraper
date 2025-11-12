@@ -44,7 +44,7 @@ const PORTALS = [
   },
 ];
 
-// const PER_PORTAL_LIMIT = 2; // Max bids to scrape per Bids&Tenders portal
+const PER_PORTAL_LIMIT = 5; // Max bids to scrape per Bids&Tenders portal
 
 async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
   console.log('=== Bids & Tenders Family Scraper Started ===');
@@ -84,138 +84,137 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
       // ], 60000);
 
       // Special handling for repeater-based portals
-let listItems;
-if (portal.key === 'nlhydro' || portal.key === 'stjohns') {
-  await waitForRepeaterRows(page, 60000);
-  listItems = await page.$$eval('tbody[data-container="true"] > tr', (rows, { portalLabel }) => {
-    const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
-    const items = [];
-    const origin = window.location.origin;
+      let listItems;
+      if (portal.key === 'nlhydro' || portal.key === 'stjohns') {
+        await waitForRepeaterRows(page, 60000);
+        listItems = await page.$$eval('tbody[data-container="true"] > tr', (rows, { portalLabel }) => {
+          const norm = (s) => (s || '').replace(/\s+/g, ' ').trim();
+          const items = [];
+          const origin = window.location.origin;
 
-    for (let i = 0; i < rows.length - 1; i += 2) {
-      const dataRow = rows[i];
-      const actionRow = rows[i + 1];
+          for (let i = 0; i < rows.length - 1; i += 2) {
+            const dataRow = rows[i];
+            const actionRow = rows[i + 1];
 
-      const title = norm(dataRow.querySelector('strong')?.textContent || '');
-      if (!title) continue;
+            const title = norm(dataRow.querySelector('strong')?.textContent || '');
+            if (!title) continue;
 
-      const tds = Array.from(dataRow.querySelectorAll('td'));
-      const status = norm(tds[1]?.textContent || '');
-      const closing = norm(tds[2]?.textContent || '');
-      const daysLeft = norm(tds[3]?.textContent || '');
+            const tds = Array.from(dataRow.querySelectorAll('td'));
+            const status = norm(tds[1]?.textContent || '');
+            const closing = norm(tds[2]?.textContent || '');
+            const daysLeft = norm(tds[3]?.textContent || '');
 
-      const detailsAnchor =
-        actionRow.querySelector('a[href*="/Tender/Detail/"]') ||
-        actionRow.querySelector('a[href*="Tender/Detail"]');
+            const detailsAnchor =
+              actionRow.querySelector('a[href*="/Tender/Detail/"]') ||
+              actionRow.querySelector('a[href*="Tender/Detail"]');
 
-      const href = detailsAnchor?.getAttribute('href') || '';
-      const portal_url = href
-        ? (href.startsWith('http') ? href : new URL(href, origin).toString())
-        : '';
+            const href = detailsAnchor?.getAttribute('href') || '';
+            const portal_url = href
+              ? (href.startsWith('http') ? href : new URL(href, origin).toString())
+              : '';
 
-      let project_reference = '';
-      const prefix = title.split('-')[0];
-      if (prefix && /\d/.test(prefix)) project_reference = norm(prefix);
+            let project_reference = '';
+            const prefix = title.split('-')[0];
+            if (prefix && /\d/.test(prefix)) project_reference = norm(prefix);
 
-      items.push({
-        title,
-        status,
-        agency: '',
-        region: '',
-        created_at: '',
-        listing_expiry_date: closing,
-        daysLeft,
-        project_reference,
-        portal_url,
-        portal_source: portalLabel,
-      });
-    }
-
-    return items;
-  }, { portalLabel: portal.label });
-} else {
-  // Generic extraction for other portals
-  await waitForAnySelector(page, [
-    'tbody[data-container="true"] tr',
-    'table.table tbody tr',
-    'table.tenders-table tbody tr',
-    '.tenderTable tbody tr',
-    '.tender-list .tender',
-    '.search-results .row a[href*="/Tender/Detail/"]',
-  ], 60000);
-
-  listItems = await page.$$eval(
-    [
-      'table tbody tr',
-      'table.tenders-table tbody tr',
-      '.tenderTable tbody tr',
-      '.tender-list .tender',
-      '.search-results .row',
-    ].join(','),
-    (rows, { portalLabel }) => {
-      const normalize = (str) => (str || '').replace(/\s+/g, ' ').trim();
-      const items = [];
-      const seen = new Set();
-
-      for (const row of rows) {
-        let linkRow = row;
-        let linkEl =
-          linkRow.querySelector('a[href*="/Tender/Detail/"]') ||
-          linkRow.querySelector('a[href*="Tender/Detail"]');
-
-        if (!linkEl) {
-          const next = row.nextElementSibling;
-          if (next) {
-            const maybeLink =
-              next.querySelector('a[href*="/Tender/Detail/"]') ||
-              next.querySelector('a[href*="Tender/Detail"]');
-            if (maybeLink) {
-              linkRow = next;
-              linkEl = maybeLink;
-            }
+            items.push({
+              title,
+              status,
+              agency: '',
+              region: '',
+              created_at: '',
+              listing_expiry_date: closing,
+              daysLeft,
+              project_reference,
+              portal_url,
+              portal_source: portalLabel,
+            });
           }
-        }
 
-        if (!linkEl) continue;
-        const href = linkEl.getAttribute('href') || '';
-        if (!href) continue;
-        const url = href.startsWith('http')
-          ? href
-          : new URL(href, window.location.origin).toString();
-        if (seen.has(url)) continue;
-        seen.add(url);
+          return items;
+        }, { portalLabel: portal.label });
+      } else {
+        // Generic extraction for other portals
+        await waitForAnySelector(page, [
+          'tbody[data-container="true"] tr',
+          'table.table tbody tr',
+          'table.tenders-table tbody tr',
+          '.tenderTable tbody tr',
+          '.tender-list .tender',
+          '.search-results .row a[href*="/Tender/Detail/"]',
+        ], 60000);
 
-        const tds = linkRow.previousElementSibling
-          ? linkRow.previousElementSibling.querySelectorAll('td')
-          : linkRow.querySelectorAll('td');
+        listItems = await page.$$eval(
+          [
+            'table tbody tr',
+            'table.tenders-table tbody tr',
+            '.tenderTable tbody tr',
+            '.tender-list .tender',
+            '.search-results .row',
+          ].join(','),
+          (rows, { portalLabel }) => {
+            const normalize = (str) => (str || '').replace(/\s+/g, ' ').trim();
+            const items = [];
+            const seen = new Set();
 
-        const title = normalize(tds[0]?.textContent || linkEl.textContent || '');
-        const status = normalize(tds[1]?.textContent || '');
-        const listing_expiry_date = normalize(tds[2]?.textContent || '');
-        const daysLeft = normalize(tds[3]?.textContent || '');
-        const project_reference = '';
-        const agency = '';
-        const region = '';
+            for (const row of rows) {
+              let linkRow = row;
+              let linkEl =
+                linkRow.querySelector('a[href*="/Tender/Detail/"]') ||
+                linkRow.querySelector('a[href*="Tender/Detail"]');
 
-        items.push({
-          title,
-          status,
-          agency,
-          region,
-          created_at: '',
-          listing_expiry_date,
-          daysLeft,
-          project_reference,
-          portal_url: url,
-          portal_source: portalLabel,
-        });
+              if (!linkEl) {
+                const next = row.nextElementSibling;
+                if (next) {
+                  const maybeLink =
+                    next.querySelector('a[href*="/Tender/Detail/"]') ||
+                    next.querySelector('a[href*="Tender/Detail"]');
+                  if (maybeLink) {
+                    linkRow = next;
+                    linkEl = maybeLink;
+                  }
+                }
+              }
+
+              if (!linkEl) continue;
+              const href = linkEl.getAttribute('href') || '';
+              if (!href) continue;
+              const url = href.startsWith('http')
+                ? href
+                : new URL(href, window.location.origin).toString();
+              if (seen.has(url)) continue;
+              seen.add(url);
+
+              const tds = linkRow.previousElementSibling
+                ? linkRow.previousElementSibling.querySelectorAll('td')
+                : linkRow.querySelectorAll('td');
+
+              const title = normalize(tds[0]?.textContent || linkEl.textContent || '');
+              const status = normalize(tds[1]?.textContent || '');
+              const listing_expiry_date = normalize(tds[2]?.textContent || '');
+              const daysLeft = normalize(tds[3]?.textContent || '');
+              const project_reference = '';
+              const agency = '';
+              const region = '';
+
+              items.push({
+                title,
+                status,
+                agency,
+                region,
+                created_at: '',
+                listing_expiry_date,
+                daysLeft,
+                project_reference,
+                portal_url: url,
+                portal_source: portalLabel,
+              });
+            }
+            return items;
+          },
+          { portalLabel: portal.label }
+        );
       }
-      return items;
-    },
-    { portalLabel: portal.label }
-  );
-}
-
 
       console.log(`Found ${listItems.length} rows on ${portal.label}`);
 
@@ -224,11 +223,11 @@ if (portal.key === 'nlhydro' || portal.key === 'stjohns') {
         continue;
       }
 
-      const itemsToProcess = listItems.slice(0, perPortalLimit);
-      // const itemsToProcess = listItems.slice(
-      //   0,
-      //   Math.min(PER_PORTAL_LIMIT, listItems.length, maxItems - results.length)
-      // );
+      // const itemsToProcess = listItems.slice(0, perPortalLimit);
+      const itemsToProcess = listItems.slice(
+        0,
+        Math.min(PER_PORTAL_LIMIT, listItems.length, maxItems - results.length)
+      );
 
       for (let i = 0; i < itemsToProcess.length && results.length < maxItems; i++) {
         const item = itemsToProcess[i];
