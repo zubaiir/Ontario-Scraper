@@ -38,7 +38,7 @@ const PORTALS = [
   },
   {
     key: 'stjohns',
-    label: 'Bids&Tenders - St. John's',
+    label: 'Bids&Tenders - St. John\'s',
     listUrl: 'https://stjohns.bidsandtenders.ca/Module/Tenders/en/',
     regionHint: 'NL',
   },
