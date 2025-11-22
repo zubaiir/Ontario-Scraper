@@ -38,7 +38,7 @@ const PORTALS = [
   },
   {
     key: 'stjohns',
-    label: 'Bids&Tenders - St. John’s',
+    label: 'Bids&Tenders - St. John's',
     listUrl: 'https://stjohns.bidsandtenders.ca/Module/Tenders/en/',
     regionHint: 'NL',
   },
@@ -73,15 +73,6 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
       await page.setViewportSize({ width: 1920, height: 1080 });
       await page.waitForLoadState('networkidle').catch(() => {});
       await page.waitForTimeout(3000);
-
-      // await waitForAnySelector(page, [
-      //   'table[aria-readonly="true"] tbody tr', 
-      //   'table tbody tr a[href*="/Tender/Detail/"]',
-      //   'table.tenders-table tbody tr',
-      //   '.tenderTable tbody tr',
-      //   '.tender-list .tender',
-      //   '.search-results .row a[href*="/Tender/Detail/"]',
-      // ], 60000);
 
       // Special handling for repeater-based portals
       let listItems;
@@ -223,7 +214,6 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
         continue;
       }
 
-      // const itemsToProcess = listItems.slice(0, perPortalLimit);
       const itemsToProcess = listItems.slice(
         0,
         Math.min(PER_PORTAL_LIMIT, listItems.length, maxItems - results.length)
@@ -261,7 +251,7 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
             results.push({
               id: fingerprint,
               title: item.title,
-              agency: item.agency || item.buyer_organization_detail || item.portal_source || "Unknown",
+              agency: item.agency || item.portal_source || portal.label || "Unknown Agency",
               region: item.region || portal.regionHint || '',
               created_at: item.created_at || '',
               listing_expiry_date: item.listing_expiry_date || '',
@@ -270,7 +260,7 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
               portal_url: item.portal_url,
               portal_source: item.portal_source,
               project_reference_detail: '',
-              buyer_organization_detail: item.agency || '',
+              buyer_organization_detail: item.agency || item.portal_source || portal.label || "Unknown Agency",
               project_type: '',
               agreement_type: '',
               city: '',
@@ -432,9 +422,11 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
           const merged = {
             title: item.title,
             agency:
-              item.agency ||
               detailData.buyer_organization_detail ||
-              '',
+              item.agency ||
+              item.portal_source ||
+              portal.label ||
+              "Unknown Agency",
             region:
               item.region ||
               portal.regionHint ||
@@ -460,7 +452,9 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
             buyer_organization_detail:
               detailData.buyer_organization_detail ||
               item.agency ||
-              '',
+              item.portal_source ||
+              portal.label ||
+              "Unknown Agency",
             project_type: detailData.project_type || '',
             agreement_type: detailData.agreement_type || '',
             city: detailData.city || '',
@@ -499,7 +493,7 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
           results.push({
             id: fingerprint,
             title: item.title,
-            agency: item.agency || '',
+            agency: item.agency || item.portal_source || portal.label || "Unknown Agency",
             region: item.region || portal.regionHint || '',
             status: item.status || '',
             created_at: item.created_at || '',
@@ -509,7 +503,7 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
             portal_url: item.portal_url,
             portal_source: item.portal_source,
             project_reference_detail: '',
-            buyer_organization_detail: item.agency || '',
+            buyer_organization_detail: item.agency || item.portal_source || portal.label || "Unknown Agency",
             project_type: '',
             agreement_type: '',
             city: '',
