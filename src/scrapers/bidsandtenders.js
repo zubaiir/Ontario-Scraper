@@ -261,7 +261,7 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
             results.push({
               id: fingerprint,
               title: item.title,
-              agency: item.agency || '',
+              agency: item.agency || item.buyer_organization_detail || item.portal_source || "Unknown",
               region: item.region || portal.regionHint || '',
               created_at: item.created_at || '',
               listing_expiry_date: item.listing_expiry_date || '',
