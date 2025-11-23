@@ -42,9 +42,18 @@ const PORTALS = [
     listUrl: 'https://stjohns.bidsandtenders.ca/Module/Tenders/en/',
     regionHint: 'NL',
   },
+  {
+    key: 'halifax',
+    label: 'Bids&Tenders - Halifax',
+    // baseUrl: 'https://halifax.bidsandtenders.ca',
+    listUrl: 'https://halifax.bidsandtenders.ca/Module/Tenders/en/',
+    regionHint: 'NS',         
+    // maxRows: 3,          
+    // usesRepeater: true, 
+  },
 ];
 
-const PER_PORTAL_LIMIT = 5; // Max bids to scrape per Bids&Tenders portal
+const PER_PORTAL_LIMIT = 1; // Max bids to scrape per Bids&Tenders portal
 
 async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
   console.log('=== Bids & Tenders Family Scraper Started ===');
@@ -238,43 +247,43 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
           await page.waitForTimeout(2000);
 
           // Check for "login required" style messages
-          const bodyText = (await page.textContent('body').catch(() => '')) || '';
-          if (/must login to your account/i.test(bodyText)) {
-            console.warn('Login required; saving basic data only.');
+          // const bodyText = (await page.textContent('body').catch(() => '')) || '';
+          // if (/must login to your account/i.test(bodyText)) {
+          //   console.warn('Login required; saving basic data only.');
 
-            const fingerprint = generateFingerprint(
-              `${item.title}${item.project_reference || ''}${
-                item.listing_expiry_date || ''
-              }${portal.key}`
-            );
+          //   const fingerprint = generateFingerprint(
+          //     `${item.title}${item.project_reference || ''}${
+          //       item.listing_expiry_date || ''
+          //     }${portal.key}`
+          //   );
 
-            results.push({
-              id: fingerprint,
-              title: item.title,
-              agency: item.agency || item.portal_source || portal.label || "Unknown Agency",
-              region: item.region || portal.regionHint || '',
-              created_at: item.created_at || '',
-              listing_expiry_date: item.listing_expiry_date || '',
-              daysLeft: item.daysLeft || '',
-              project_reference: item.project_reference || '',
-              portal_url: item.portal_url,
-              portal_source: item.portal_source,
-              project_reference_detail: '',
-              buyer_organization_detail: item.agency || item.portal_source || portal.label || "Unknown Agency",
-              project_type: '',
-              agreement_type: '',
-              city: '',
-              contact_person: '',
-              contact_phone: '',
-              contact_email: '',
-              detailed_description:
-                'Login required to view full bid details on this Bids & Tenders portal.',
-              hash_fingerprint: fingerprint,
-            });
+          //   results.push({
+          //     id: fingerprint,
+          //     title: item.title,
+          //     agency: item.agency || item.portal_source || portal.label || "Unknown Agency",
+          //     region: item.region || portal.regionHint || '',
+          //     created_at: item.created_at || '',
+          //     listing_expiry_date: item.listing_expiry_date || '',
+          //     daysLeft: item.daysLeft || '',
+          //     project_reference: item.project_reference || '',
+          //     portal_url: item.portal_url,
+          //     portal_source: item.portal_source,
+          //     project_reference_detail: '',
+          //     buyer_organization_detail: item.agency || item.portal_source || portal.label || "Unknown Agency",
+          //     project_type: '',
+          //     agreement_type: '',
+          //     city: '',
+          //     contact_person: '',
+          //     contact_phone: '',
+          //     contact_email: '',
+          //     detailed_description:
+          //       'Login required to view full bid details on this Bids & Tenders portal.',
+          //     hash_fingerprint: fingerprint,
+          //   });
 
-            await safeGoBackToList(page, portal.listUrl);
-            continue;
-          }
+          //   await safeGoBackToList(page, portal.listUrl);
+          //   continue;
+          // }
 
           const detailData = await page.evaluate(() => {
             const normalize = (str) =>
