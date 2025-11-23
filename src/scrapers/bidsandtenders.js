@@ -17,45 +17,48 @@ const PORTALS = [
     label: 'Bids&Tenders - NL Hydro',
     listUrl: 'https://nlhydro.bidsandtenders.ca/Module/Tenders/en/',
     regionHint: 'NL',
+    city: "Newfoundland and Labrador"
   },
   {
     key: 'mississauga',
     label: 'Bids&Tenders - Mississauga',
     listUrl: 'https://mississauga.bidsandtenders.ca/Module/Tenders/',
     regionHint: 'ON',
+    city: 'Mississauga'
   },
   {
     key: 'rmwb',
     label: 'Bids&Tenders - RMWB',
     listUrl: 'https://rmwb.bidsandtenders.ca/Module/Tenders/en/',
     regionHint: 'AB',
+    city: 'Fort McMurray'
   },
   {
     key: 'saskatoon',
     label: 'Bids&Tenders - Saskatoon',
     listUrl: 'https://saskatoon.bidsandtenders.ca/Module/Tenders/en/',
     regionHint: 'SK',
+    city: 'Saskatoon'
   },
   {
     key: 'stjohns',
     label: 'Bids&Tenders - St. John\'s',
     listUrl: 'https://stjohns.bidsandtenders.ca/Module/Tenders/en/',
     regionHint: 'NL',
+    city: "St. John's"
   },
   {
     key: 'halifax',
     label: 'Bids&Tenders - Halifax',
-    // baseUrl: 'https://halifax.bidsandtenders.ca',
     listUrl: 'https://halifax.bidsandtenders.ca/Module/Tenders/en/',
-    regionHint: 'NS',         
-    // maxRows: 3,          
-    // usesRepeater: true, 
+    regionHint: 'NS',
+    city: "Halifax"         
   },
 ];
 
-const PER_PORTAL_LIMIT = 1; // Max bids to scrape per Bids&Tenders portal
+const PER_PORTAL_LIMIT = 10; // Max bids to scrape per Bids&Tenders portal
 
-async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
+async function scrapeBidsAndTenders({ page, maxItems = 60 }) {
   console.log('=== Bids & Tenders Family Scraper Started ===');
   console.log(`Target portals: ${PORTALS.map(p => p.key).join(', ')}`);
   console.log(`Max items: ${maxItems}`);
@@ -466,7 +469,7 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
               "Unknown Agency",
             project_type: detailData.project_type || '',
             agreement_type: detailData.agreement_type || '',
-            city: detailData.city || '',
+            city: portal.city || '',
             contact_person: detailData.contact_person || '',
             contact_phone: detailData.contact_phone || '',
             contact_email: detailData.contact_email || '',
