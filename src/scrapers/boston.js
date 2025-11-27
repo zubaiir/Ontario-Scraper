@@ -246,7 +246,7 @@ async function scrapeBostonBids({ page, maxItems, webhookUrl, webhookSecret }) {
         category: '',
         listing_expiry_date: item.listing_expiry_date,
         portal_url: `https://procurement.boston.gov/psp/prdsp_2/SUPPLIER/ERP/c/AUC_MANAGE_BIDS.AUC_RESP_INQ_DTL.GBL?Page=AUC_RESP_INQ_DTL&Action=U&AUC_ID=${item.project_reference}&AUC_ROUND=1&AUC_VERSION=1&BIDDER_ID=0000000001&BIDDER_LOC=1&BIDDER_SETID=SHARE&BIDDER_TYPE=B&BUSINESS_UNIT=BOSTN`,
-        city: 'Boston',
+        city: 'Massachusetts',
         portal_source: 'Boston Bids',
         project_code: item.project_reference,
         hash_fingerprint: fingerprint,
