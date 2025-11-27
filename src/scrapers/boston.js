@@ -182,7 +182,7 @@ async function scrapeBostonBids({ page, maxItems, webhookUrl, webhookSecret }) {
         category: detailData.event_format || detailData.event_type || 'RFx',
         listing_expiry_date: detailData.event_end_date || item.listing_expiry_date,
         portal_url: detailPageUrl,
-        city: 'Boston',
+        city: 'Massachusetts',
         portal_source: 'Boston Bids',
         
         // Additional detail fields
