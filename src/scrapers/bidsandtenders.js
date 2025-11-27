@@ -17,36 +17,48 @@ const PORTALS = [
     label: 'Bids&Tenders - NL Hydro',
     listUrl: 'https://nlhydro.bidsandtenders.ca/Module/Tenders/en/',
     regionHint: 'NL',
+    city: "Newfoundland and Labrador"
   },
   {
     key: 'mississauga',
     label: 'Bids&Tenders - Mississauga',
     listUrl: 'https://mississauga.bidsandtenders.ca/Module/Tenders/',
     regionHint: 'ON',
+    city: 'Mississauga'
   },
   {
     key: 'rmwb',
     label: 'Bids&Tenders - RMWB',
     listUrl: 'https://rmwb.bidsandtenders.ca/Module/Tenders/en/',
     regionHint: 'AB',
+    city: 'Fort McMurray'
   },
   {
     key: 'saskatoon',
     label: 'Bids&Tenders - Saskatoon',
     listUrl: 'https://saskatoon.bidsandtenders.ca/Module/Tenders/en/',
     regionHint: 'SK',
+    city: 'Saskatoon'
   },
   {
     key: 'stjohns',
     label: 'Bids&Tenders - St. John\'s',
     listUrl: 'https://stjohns.bidsandtenders.ca/Module/Tenders/en/',
     regionHint: 'NL',
+    city: "St. John's"
+  },
+  {
+    key: 'halifax',
+    label: 'Bids&Tenders - Halifax',
+    listUrl: 'https://halifax.bidsandtenders.ca/Module/Tenders/en/',
+    regionHint: 'NS',
+    city: "Halifax"         
   },
 ];
 
-const PER_PORTAL_LIMIT = 5; // Max bids to scrape per Bids&Tenders portal
+const PER_PORTAL_LIMIT = 10; // Max bids to scrape per Bids&Tenders portal
 
-async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
+async function scrapeBidsAndTenders({ page, maxItems = 60 }) {
   console.log('=== Bids & Tenders Family Scraper Started ===');
   console.log(`Target portals: ${PORTALS.map(p => p.key).join(', ')}`);
   console.log(`Max items: ${maxItems}`);
@@ -238,43 +250,43 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
           await page.waitForTimeout(2000);
 
           // Check for "login required" style messages
-          const bodyText = (await page.textContent('body').catch(() => '')) || '';
-          if (/must login to your account/i.test(bodyText)) {
-            console.warn('Login required; saving basic data only.');
+          // const bodyText = (await page.textContent('body').catch(() => '')) || '';
+          // if (/must login to your account/i.test(bodyText)) {
+          //   console.warn('Login required; saving basic data only.');
 
-            const fingerprint = generateFingerprint(
-              `${item.title}${item.project_reference || ''}${
-                item.listing_expiry_date || ''
-              }${portal.key}`
-            );
+          //   const fingerprint = generateFingerprint(
+          //     `${item.title}${item.project_reference || ''}${
+          //       item.listing_expiry_date || ''
+          //     }${portal.key}`
+          //   );
 
-            results.push({
-              id: fingerprint,
-              title: item.title,
-              agency: item.agency || item.portal_source || portal.label || "Unknown Agency",
-              region: item.region || portal.regionHint || '',
-              created_at: item.created_at || '',
-              listing_expiry_date: item.listing_expiry_date || '',
-              daysLeft: item.daysLeft || '',
-              project_reference: item.project_reference || '',
-              portal_url: item.portal_url,
-              portal_source: item.portal_source,
-              project_reference_detail: '',
-              buyer_organization_detail: item.agency || item.portal_source || portal.label || "Unknown Agency",
-              project_type: '',
-              agreement_type: '',
-              city: '',
-              contact_person: '',
-              contact_phone: '',
-              contact_email: '',
-              detailed_description:
-                'Login required to view full bid details on this Bids & Tenders portal.',
-              hash_fingerprint: fingerprint,
-            });
+          //   results.push({
+          //     id: fingerprint,
+          //     title: item.title,
+          //     agency: item.agency || item.portal_source || portal.label || "Unknown Agency",
+          //     region: item.region || portal.regionHint || '',
+          //     created_at: item.created_at || '',
+          //     listing_expiry_date: item.listing_expiry_date || '',
+          //     daysLeft: item.daysLeft || '',
+          //     project_reference: item.project_reference || '',
+          //     portal_url: item.portal_url,
+          //     portal_source: item.portal_source,
+          //     project_reference_detail: '',
+          //     buyer_organization_detail: item.agency || item.portal_source || portal.label || "Unknown Agency",
+          //     project_type: '',
+          //     agreement_type: '',
+          //     city: '',
+          //     contact_person: '',
+          //     contact_phone: '',
+          //     contact_email: '',
+          //     detailed_description:
+          //       'Login required to view full bid details on this Bids & Tenders portal.',
+          //     hash_fingerprint: fingerprint,
+          //   });
 
-            await safeGoBackToList(page, portal.listUrl);
-            continue;
-          }
+          //   await safeGoBackToList(page, portal.listUrl);
+          //   continue;
+          // }
 
           const detailData = await page.evaluate(() => {
             const normalize = (str) =>
@@ -457,7 +469,7 @@ async function scrapeBidsAndTenders({ page, maxItems = 50 }) {
               "Unknown Agency",
             project_type: detailData.project_type || '',
             agreement_type: detailData.agreement_type || '',
-            city: detailData.city || '',
+            city: portal.city || '',
             contact_person: detailData.contact_person || '',
             contact_phone: detailData.contact_phone || '',
             contact_email: detailData.contact_email || '',
