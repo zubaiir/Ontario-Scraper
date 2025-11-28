@@ -7,6 +7,7 @@ const { scrapeSamGov } = require('./scrapers/samgov');
 const { scrapeMerx } = require('./scrapers/merx');
 const { scrapeBostonBids } = require('./scrapers/boston');
 const { scrapeBidsAndTenders } = require('./scrapers/bidsandtenders');
+const { scrapeNyscr } = require('./scrapers/nyscr');
 const { scrapeAlberta } = require('./scrapers/albertapurchasing');
 const { scrapeBCBid } = require('./scrapers/bcbid');
 const { scrapeNewBrunswick } = require('./scrapers/newbrunswick');
@@ -84,6 +85,11 @@ Actor.main(async () => {
         case 'bidsandtenders':
           sourceName = 'Bids&Tenders';
           results = await scrapeBidsAndTenders({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'nyscr':
+          sourceName = 'Nyscr';
+          results = await scrapeNyscr({ page, maxItems, webhookUrl, webhookSecret });
           break;
 
         case 'albertapurchasing':
