@@ -8,8 +8,8 @@
       "type": "string",
       "description": "Select which portal to scrape",
       "editor": "select",
-      "enum": ["ontario", "samgov", "merx", "boston", "global", "albertapurchasing", "bcbid", "newbrunswick", "novascotia", "sasktenders", "ionwave", "bidnet", "bonfire", "opengov", "publicpurchase", "vermont", "newfoundland", "cfta", "bidscanada", "bidcentral", "ampquebec", "bidsandtenders", "nyscr","civicinfobc", "constructconnect"],
-      "enumTitles": ["Ontario Tenders Portal", "SAM.gov", "Merx", "Boston", "Global", "Alberta Purchasing Connection", "BC Bid", "New Brunswick", "Nova Scotia", "SaskTenders", "Ionwave", "BidNet", "Bonfire", "OpenGov", "Public Purchase", "Vermont", "Newfoundland and Labrador", "CFTA", "Bids Canada", "BidCentral", "AMQ Quebec", "Bids&Tenders", "Nyscr", "CivicInfo BC", "ConstructConnect"],
+      "enum": ["ontario", "samgov", "merx", "merxgovnl", "boston", "global", "albertapurchasing", "bcbid", "newbrunswick", "novascotia", "sasktenders", "ionwave", "bidnet", "bonfire", "opengov", "publicpurchase", "vermont", "newfoundland", "cfta", "bidscanada", "bidcentral", "ampquebec", "bidsandtenders", "nyscr","civicinfobc", "constructconnect"],
+      "enumTitles": ["Ontario Tenders Portal", "SAM.gov", "Merx", "MerxGovNL", "Boston", "Global", "Alberta Purchasing Connection", "BC Bid", "New Brunswick", "Nova Scotia", "SaskTenders", "Ionwave", "BidNet", "Bonfire", "OpenGov", "Public Purchase", "Vermont", "Newfoundland and Labrador", "CFTA", "Bids Canada", "BidCentral", "AMQ Quebec", "Bids&Tenders", "Nyscr", "CivicInfo BC", "ConstructConnect"],
       "default": "ontario"
     },
     "webhookUrl": {

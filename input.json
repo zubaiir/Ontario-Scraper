@@ -1,8 +1,8 @@
 {
-  "source": "nyscr", 
+  "source": "merxgovnl", 
   "webhookUrl": "https://ezsoyvbanojrprtvgtly.supabase.co/functions/v1/webhooks-apify",
   "webhookSecret": "4374dd049a057fb7d8a1b1f7d8d964188792615e168de8c71d62",
-  "maxItems": 300,
+  "maxItems": 30,
   "debug": true,
   "headless": false
 }

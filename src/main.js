@@ -5,6 +5,7 @@ const { chromium } = require('playwright');
 const { scrapeOntario } = require('./scrapers/ontario');
 const { scrapeSamGov } = require('./scrapers/samgov');
 const { scrapeMerx } = require('./scrapers/merx');
+const { scrapeMerxGovNL } = require('./scrapers/merxgovnl');
 const { scrapeBostonBids } = require('./scrapers/boston');
 const { scrapeBidsAndTenders } = require('./scrapers/bidsandtenders');
 const { scrapeNyscr } = require('./scrapers/nyscr');
@@ -75,6 +76,11 @@ Actor.main(async () => {
         case 'merx':
           sourceName = 'Merx';
           results = await scrapeMerx({ page, maxItems, webhookUrl, webhookSecret });
+          break;
+
+        case 'merxgovnl':
+          sourceName = 'MerxGovNL';
+          results = await scrapeMerxGovNL({ page, maxItems, webhookUrl, webhookSecret });
           break;
 
         case 'boston':
