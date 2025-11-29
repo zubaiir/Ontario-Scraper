@@ -73,7 +73,7 @@ async function scrapeSamGov({ page, maxItems, webhookUrl, webhookSecret }) {
           listing_expiry_date: responseDate,
           detailUrl: href,
           portal_url: 'https://sam.gov/search/',
-          city: 'United States',
+          city: '',
           portal_source: 'SAM.gov',
         });
       }
@@ -201,8 +201,10 @@ async function scrapeSamGov({ page, maxItems, webhookUrl, webhookSecret }) {
         const altPhoneEl = document.querySelector('#alt-poc ~ .grid-row #phone ~ .sds-field__value h6');
         const altPhone = altPhoneEl ? altPhoneEl.textContent.trim() : '';
 
+        // Extract Contracting Office Address for city field
         const addressElements = document.querySelectorAll('#contract-office ~ .ng-star-inserted h6');
-        const address = Array.from(addressElements).map(el => el.textContent.trim()).join(', ');
+        const addressParts = Array.from(addressElements).map(el => el.textContent.trim());
+        const contractingOfficeAddress = addressParts.join(', ');
 
         return {
           status,
@@ -229,7 +231,7 @@ async function scrapeSamGov({ page, maxItems, webhookUrl, webhookSecret }) {
           altContact,
           altEmail,
           altPhone,
-          address
+          contractingOfficeAddress
         };
       });
 
@@ -244,7 +246,7 @@ async function scrapeSamGov({ page, maxItems, webhookUrl, webhookSecret }) {
         category: detailData.contractType || item.category,
         listing_expiry_date: detailData.responseDate,
         portal_url: `https://sam.gov${item.detailUrl}`,
-        city: 'United States',
+        city: detailData.contractingOfficeAddress || 'United States',
         portal_source: 'SAM.gov',
         
         project_code: `samgov_${detailData.noticeId || item.project_reference}`,
@@ -270,7 +272,7 @@ async function scrapeSamGov({ page, maxItems, webhookUrl, webhookSecret }) {
         psc_code: detailData.psc,
         naics_code: detailData.naics,
         place_of_performance: detailData.placeOfPerformance,
-        contracting_office_address: detailData.address,
+        contracting_office_address: detailData.contractingOfficeAddress,
         alternative_contact_name: detailData.altContact,
         alternative_contact_email: detailData.altEmail,
         alternative_contact_phone: detailData.altPhone,
@@ -315,6 +317,7 @@ async function scrapeSamGov({ page, maxItems, webhookUrl, webhookSecret }) {
         created_at: item.created_at,
         listing_expiry_date: item.listing_expiry_date,
         portal_url: `https://sam.gov${item.detailUrl}`,
+        city: 'United States',
         hash_fingerprint: fingerprint,
       });
 
